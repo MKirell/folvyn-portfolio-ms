@@ -1,0 +1,27 @@
+name: dev
+
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+concurrency:
+  group: dev-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    uses: ./.github/workflows/quality.yml
+
+  deploy:
+    needs: quality
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: dev
+      build: true
+    permissions:
+      contents: read
+      id-token: write

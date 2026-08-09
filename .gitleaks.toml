@@ -1,0 +1,11 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Test fixtures. The generic-api-key rule fires on the word key next to anything long and random-looking, which describes a MongoDB ObjectId and an uploaded asset key as well as it describes a credential. Narrow to that one rule, to test material, and to those two shapes."
+targetRules = ["generic-api-key"]
+paths = ['''^(test|e2e)/''']
+regexes = [
+  '''^[0-9a-f]{24}$''',
+  '''^[a-z0-9_-]+\.(pdf|png|jpe?g|svg|webp)$''',
+]

@@ -1,0 +1,98 @@
+name: deploy
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: dev or prod
+        required: true
+        type: string
+      build:
+        description: Build and push the image, or promote the digest develop already verified
+        required: true
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    if: vars.DEPLOY_ENABLED != 'false'
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Check the deploy variables are set
+        env:
+          AWS_REGION: ${{ vars.AWS_REGION }}
+          AWS_DEPLOY_ROLE_ARN: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+          LAMBDA_FUNCTION_NAME: ${{ vars.LAMBDA_FUNCTION_NAME }}
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
+        run: |
+          missing=""
+          for v in AWS_REGION AWS_DEPLOY_ROLE_ARN ECR_REPOSITORY LAMBDA_FUNCTION_NAME API_BASE_URL; do
+            eval "value=\${$v:-}"
+            [ -z "$value" ] && missing="$missing $v"
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::Environment variables not set for ${{ inputs.environment }}:$missing"
+            echo "Settings -> Environments -> ${{ inputs.environment }} -> Variables" >&2
+            exit 1
+          fi
+
+      - uses: actions/checkout@v7
+
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - uses: aws-actions/amazon-ecr-login@v2
+        id: ecr
+
+      - name: Build and push
+        if: inputs.build
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+          TAG: ${{ github.sha }}
+        run: |
+          docker build --platform linux/amd64 -t "$REGISTRY/$REPOSITORY:$TAG" .
+          docker push "$REGISTRY/$REPOSITORY:$TAG"
+
+      - name: Promote the digest dev verified
+        if: ${{ !inputs.build }}
+        env:
+          REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+          TAG: ${{ github.sha }}
+        run: |
+          if ! aws ecr describe-images --repository-name "$REPOSITORY" --image-ids imageTag="$TAG" >/dev/null 2>&1; then
+            echo "::error::No image tagged $TAG. prod promotes what dev built; it never builds its own." >&2
+            exit 1
+          fi
+
+      - name: Roll the function onto the image
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+          TAG: ${{ github.sha }}
+          FUNCTION: ${{ vars.LAMBDA_FUNCTION_NAME }}
+        run: |
+          aws lambda update-function-code \
+            --function-name "$FUNCTION" \
+            --image-uri "$REGISTRY/$REPOSITORY:$TAG" \
+            --publish >/dev/null
+          aws lambda wait function-updated --function-name "$FUNCTION"
+
+      - name: Smoke test
+        run: |
+          for i in $(seq 1 10); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "${{ vars.API_BASE_URL }}/health" || true)
+            [ "$code" = "200" ] && echo "healthy" && exit 0
+            sleep 6
+          done
+          echo "health check never returned 200" >&2
+          exit 1
