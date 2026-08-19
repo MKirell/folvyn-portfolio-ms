@@ -185,16 +185,6 @@ const ENVIRONMENT_NAMES: Record<string, string> = {
   prod: 'Production',
 }
 
-/**
- * The deployment a reader is looking at, which NODE_ENV alone cannot tell them: dev and
- * production both run as 'production'.
- *
- * An earlier version inferred it from the site host, which was wrong twice over -- the
- * host is a guess about a name, and SITE_URL is not one of the variables the deploy sets,
- * so every deployed environment read 'Production'. APP_ENV is set by Terraform to the
- * environment's own name and by .env.local to 'local', so it is the answer rather than
- * evidence for it.
- */
 export function environmentName(appEnv: string | undefined): string {
   const named = ENVIRONMENT_NAMES[String(appEnv ?? '').toLowerCase()]
   if (named) return named
