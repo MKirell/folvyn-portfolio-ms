@@ -179,13 +179,26 @@ export function toCascade(result: unknown): Record<string, number> {
   return Object.fromEntries(ERASURE_STORES.map((store) => [store, 0]))
 }
 
+const ENVIRONMENT_NAMES: Record<string, string> = {
+  local: 'Local',
+  dev: 'Development',
+  prod: 'Production',
+}
+
 /**
- * The deployment a reader is looking at, which NODE_ENV alone cannot tell them:
- * dev and production both run as 'production', and only the site they serve differs.
+ * The deployment a reader is looking at, which NODE_ENV alone cannot tell them: dev and
+ * production both run as 'production'.
+ *
+ * An earlier version inferred it from the site host, which was wrong twice over -- the
+ * host is a guess about a name, and SITE_URL is not one of the variables the deploy sets,
+ * so every deployed environment read 'Production'. APP_ENV is set by Terraform to the
+ * environment's own name and by .env.local to 'local', so it is the answer rather than
+ * evidence for it.
  */
-export function environmentName(siteUrl: string): string {
-  if ((process.env.NODE_ENV ?? 'development') !== 'production') return 'Local'
-  return /(^|\/\/|\.)([a-z0-9-]*-)?dev\./i.test(siteUrl) ? 'Development' : 'Production'
+export function environmentName(appEnv: string | undefined): string {
+  const named = ENVIRONMENT_NAMES[String(appEnv ?? '').toLowerCase()]
+  if (named) return named
+  return (process.env.NODE_ENV ?? 'development') === 'production' ? 'Production' : 'Local'
 }
 
 @Injectable()
@@ -506,7 +519,7 @@ export class PlatformService {
       retention: { rawEventDays: 30, rollupMonths: ROLLUP_RETENTION_MONTHS },
       environment: {
         nodeEnv: process.env.NODE_ENV ?? 'unknown',
-        name: environmentName(process.env.SITE_URL ?? ''),
+        name: environmentName(process.env.APP_ENV),
         database: this.connection.name,
         image: process.env.APP_IMAGE_TAG ?? 'local',
       },
