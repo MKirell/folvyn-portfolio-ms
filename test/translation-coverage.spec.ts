@@ -113,9 +113,7 @@ describe('TranslationCoverageService', () => {
   })
 
   it('reads a Mongoose Map the same way as a plain object', async () => {
-    experiences.findAll.mockResolvedValue([
-      { translations: new Map([['fr', { ...FILLED }]]) },
-    ])
+    experiences.findAll.mockResolvedValue([{ translations: new Map([['fr', { ...FILLED }]]) }])
 
     await expect(service.missingFor(OWNER, 'fr')).resolves.toEqual([])
   })
