@@ -39,6 +39,8 @@ import { AuditQueryDto, PortfolioQueryDto, SuspendOwnerDto } from '@/platform/pl
 import type { AuditEntry } from '@/platform/audit.schema'
 import type { AuthenticatedUser } from '@/common/types/authenticated-user'
 import type { OwnerExport } from '@/portfolio/me/owner-lifecycle.service'
+import { PrerenderService } from '@/prerender/prerender.service'
+import type { PrerenderAttempt } from '@/prerender/prerender.service'
 
 const DEFAULT_DAYS = 30
 const DEFAULT_AUDIT_LIMIT = 50
@@ -60,6 +62,13 @@ export interface PlatformHealth {
   sessions: number
   errorRate: number
   image: string | null
+  prerender: PrerenderHealth
+}
+
+export interface PrerenderHealth {
+  configured: boolean
+  attempts: PrerenderAttempt[]
+  failing: number
 }
 
 @Roles(Role.Platform)
@@ -68,6 +77,7 @@ export class PlatformController {
   constructor(
     private readonly platform: PlatformService,
     private readonly rollup: RollupService,
+    private readonly prerender: PrerenderService,
     @InjectModel(Owner.name) private readonly owners: Model<Owner>,
     @InjectModel(AnalyticsDaily.name) private readonly daily: Model<AnalyticsDailyDocument>,
     @InjectConnection() private readonly connection: Connection,
@@ -114,6 +124,11 @@ export class PlatformController {
                 1000,
             ) / 10,
       image: process.env.APP_IMAGE_TAG ?? null,
+      prerender: {
+        configured: this.prerender.enabled,
+        attempts: this.prerender.recent(),
+        failing: this.prerender.recent().filter((attempt) => !attempt.succeeded).length,
+      },
     }
   }
 

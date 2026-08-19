@@ -5,7 +5,7 @@ import { AccessAllowlistGuard } from '@/common/guards/access-allowlist.guard'
 import { IdentityDirectory } from '@/auth/identity.directory'
 import type { AuthenticatedUser } from '@/common/types/authenticated-user'
 
-const ALLOWED = ['Admin@mkirell.com', 'mohamed.khalil.zrelly@gmail.com']
+const ALLOWED = ['Admin@mkirell.com', 'ada.lovelace@example.com']
 
 function context(user: AuthenticatedUser | undefined, isPublic = false): ExecutionContext {
   return {
@@ -75,7 +75,7 @@ describe('AccessAllowlistGuard', () => {
     const { instance, describe } = guard(ALLOWED, null)
 
     await expect(
-      instance.canActivate(context(human({ email: 'mohamed.khalil.zrelly@gmail.com' }))),
+      instance.canActivate(context(human({ email: 'ada.lovelace@example.com' }))),
     ).resolves.toBe(true)
     expect(describe).not.toHaveBeenCalled()
   })

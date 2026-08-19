@@ -11,6 +11,7 @@ import { CertificationService } from '@/portfolio/education/certification.servic
 import { SpokenLanguageService } from '@/portfolio/education/spoken-language.service'
 import { VolunteeringService } from '@/portfolio/achievement/volunteering.service'
 import { AwardService } from '@/portfolio/achievement/award.service'
+import { assetPrefixFor } from '@/uploads/asset-prefix'
 import type { LocaleSummary, ResolvedPortfolio } from '@/common/types/portfolio.types'
 
 export const PORTFOLIO_PREFIX = 'fol'
@@ -110,7 +111,7 @@ export class PortfolioService {
   }
 
   private assetPrefix(ownerId: string): string {
-    return this.config.get<string>('assets.bucket') ? ownerId : ''
+    return assetPrefixFor(this.config.get<string>('assets.bucket'), ownerId)
   }
 
   private pickLang(requested: string | undefined, available: LocaleSummary[]): string {

@@ -1,16 +1,7 @@
 import { PartialType } from '@nestjs/mapped-types'
-import { IsInt, IsOptional, IsString, Matches, Max, MaxLength, Min } from 'class-validator'
-import { IsTranslationMap } from '@/common/dto/translations.dto'
-
-export class SpokenLanguageTranslationDto {
-  @IsString()
-  @MaxLength(60)
-  name: string
-
-  @IsString()
-  @MaxLength(40)
-  level: string
-}
+import { IsIn, IsInt, IsOptional, IsString, Matches, Max, MaxLength, Min } from 'class-validator'
+import { COUNTRY_PATTERN } from '@/common/dto/patterns'
+import { LANGUAGE_LEVELS } from '@/common/dto/vocabularies'
 
 export class CreateSpokenLanguageDto {
   @IsOptional()
@@ -19,8 +10,15 @@ export class CreateSpokenLanguageDto {
   order?: number
 
   @IsString()
-  @Matches(/^[a-z]{2}$/)
-  flagCode: string
+  @Matches(/^[a-z]{2}(-[A-Z]{2})?$/)
+  code: string
+
+  @IsString()
+  @Matches(COUNTRY_PATTERN)
+  country: string
+
+  @IsIn(LANGUAGE_LEVELS)
+  level: string
 
   @IsInt()
   @Min(0)
@@ -31,9 +29,6 @@ export class CreateSpokenLanguageDto {
   @IsString()
   @MaxLength(255)
   doc?: string | null
-
-  @IsTranslationMap(SpokenLanguageTranslationDto)
-  translations: Record<string, SpokenLanguageTranslationDto>
 }
 
 export class UpdateSpokenLanguageDto extends PartialType(CreateSpokenLanguageDto) {}

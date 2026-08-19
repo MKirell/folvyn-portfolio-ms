@@ -1,6 +1,6 @@
 import { IsIn, IsInt, IsString, Matches, Max, MaxLength, Min } from 'class-validator'
 
-export const ASSET_KEY_PATTERN = /^([a-z0-9-]+\/)?[a-z0-9_-]+\.[a-z]{3,4}$/
+export const ASSET_KEY_PATTERN = /^[a-z0-9_-]+\.[a-z]{3,4}$/
 
 export const ALLOWED_CONTENT_TYPES = [
   'application/pdf',
@@ -16,8 +16,7 @@ export class PresignUploadDto {
   @IsString()
   @MaxLength(255)
   @Matches(ASSET_KEY_PATTERN, {
-    message:
-      'filename must be lowercase, may sit in one folder, and must end in a 3 or 4 letter extension',
+    message: 'filename must be lowercase, carry no folder, and end in a 3 or 4 letter extension',
   })
   filename: string
 

@@ -680,11 +680,11 @@ describe('collect and summary endpoints', () => {
   it('forwards the CloudFront country header without ever seeing an IP', async () => {
     await request(app.getHttpServer())
       .post('/collect')
-      .set('CloudFront-Viewer-Country', 'TN')
+      .set('CloudFront-Viewer-Country', 'GB')
       .send({ sessionId: 's1', events: [{ type: 'session' }] })
       .expect(204)
 
-    expect(ingest.mock.calls[0][1]).toMatchObject({ country: 'TN' })
+    expect(ingest.mock.calls[0][1]).toMatchObject({ country: 'GB' })
   })
 
   it('rejects an unknown event type', async () => {

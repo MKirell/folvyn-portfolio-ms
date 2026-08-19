@@ -7,12 +7,6 @@ import { ownerIdProp } from '@/common/schemas/owned'
 export class AwardTranslation {
   @Prop({ required: true, trim: true })
   title: string
-
-  @Prop({ type: String, default: null, trim: true })
-  place: string | null
-
-  @Prop({ type: String, default: null, trim: true })
-  date: string | null
 }
 
 export const AwardTranslationSchema = SchemaFactory.createForClass(AwardTranslation)
@@ -29,13 +23,16 @@ export class Award {
   icon: string
 
   @Prop({ type: String, default: null, trim: true })
-  flagCode: string | null
+  country: string | null
+
+  @Prop({ type: String, default: null, trim: true })
+  city: string | null
+
+  @Prop({ type: String, default: null, trim: true })
+  date: string | null
 
   @Prop({ type: [String], default: [] })
   images: string[]
-
-  @Prop({ type: String, default: null, trim: true })
-  doc: string | null
 
   @Prop({ type: Map, of: AwardTranslationSchema, required: true })
   translations: Map<string, AwardTranslation>

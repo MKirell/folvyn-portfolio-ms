@@ -6,7 +6,7 @@ import { ownerIdProp } from '@/common/schemas/owned'
 @Schema(translationSchemaOptions)
 export class ProjectTranslation {
   @Prop({ required: true, trim: true })
-  period: string
+  title: string
 
   @Prop({ required: true, trim: true })
   badge: string
@@ -26,7 +26,10 @@ export class Project {
   order: number
 
   @Prop({ required: true, trim: true })
-  title: string
+  startDate: string
+
+  @Prop({ type: String, default: null, trim: true })
+  endDate: string | null
 
   @Prop({ type: [String], default: [] })
   tags: string[]

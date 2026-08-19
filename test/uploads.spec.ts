@@ -38,21 +38,24 @@ const assetsConfig = {
 describe('asset key pattern', () => {
   it.each([
     'degree-bachelor-2024.pdf',
-    'resume_en_mkzrelly.pdf',
+    'resume_en_ada-lovelace.pdf',
     'off-image.jpeg',
     'folvyn-logo-dark.png',
-    'awards/award-awa-2023-1.jpg',
-    'flags/tn.svg',
+    'award-awa-2023-1.jpg',
   ])('accepts %s, which the database already stores', (key) => {
     expect(ASSET_KEY_PATTERN.test(key)).toBe(true)
   })
 
-  it.each(['../secret.pdf', 'a/b/c.pdf', 'Resume.PDF', 'no-extension', 'trailing/'])(
-    'rejects %s',
-    (key) => {
-      expect(ASSET_KEY_PATTERN.test(key)).toBe(false)
-    },
-  )
+  it.each([
+    '../secret.pdf',
+    'a/b/c.pdf',
+    'awards/award-awa-2023-1.jpg',
+    'Resume.PDF',
+    'no-extension',
+    'trailing/',
+  ])('rejects %s', (key) => {
+    expect(ASSET_KEY_PATTERN.test(key)).toBe(false)
+  })
 })
 
 const OWNER = '507f1f77bcf86cd799439021'
@@ -205,7 +208,7 @@ describe('uploads endpoints', () => {
           Size: 20,
           LastModified: new Date('2026-02-01T00:00:00Z'),
         },
-        { Key: `imgs/${OWNER}/awards/`, Size: 0, LastModified: new Date('2026-01-01T00:00:00Z') },
+        { Key: `imgs/${OWNER}/`, Size: 0, LastModified: new Date('2026-01-01T00:00:00Z') },
       ],
       IsTruncated: false,
     })
@@ -259,12 +262,12 @@ describe('uploads endpoints', () => {
     send.mockResolvedValueOnce({})
 
     await request(app.getHttpServer())
-      .delete(`/admin/uploads/${encodeURIComponent('awards/b.jpg')}`)
+      .delete(`/admin/uploads/${encodeURIComponent('b.jpg')}`)
       .set('Authorization', `Bearer ${ownerToken()}`)
       .expect(204)
 
     expect(send).toHaveBeenCalledTimes(1)
-    expect(send.mock.calls[0][0].input.Key).toBe(`imgs/${OWNER}/awards/b.jpg`)
+    expect(send.mock.calls[0][0].input.Key).toBe(`imgs/${OWNER}/b.jpg`)
   })
 
   it('deletes a document from the folder its extension belongs to', async () => {
@@ -306,8 +309,11 @@ describe('uploads without a configured bucket', () => {
     service = moduleRef.get(UploadsService)
   })
 
-  it('reports the feature as unavailable rather than failing obscurely', async () => {
-    await expect(service.list(OWNER)).rejects.toThrow('The asset bucket is not configured')
+  it('lists nothing instead of failing, so the console can fall back to the repo', async () => {
+    await expect(service.list(OWNER)).resolves.toEqual([])
+  })
+
+  it('still refuses the writes that genuinely cannot work', async () => {
     await expect(
       service.presign(OWNER, { filename: 'a.pdf', contentType: 'application/pdf', size: 1 }),
     ).rejects.toThrow('The asset bucket is not configured')

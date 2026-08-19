@@ -55,12 +55,19 @@ export interface AssetsConfig {
   urlTtl: number
 }
 
+export interface PrerenderConfig {
+  functionName: string
+  region: string
+  debounceMs: number
+}
+
 export interface Configuration {
   app: AppConfig
   database: DatabaseConfig
   cognito: CognitoConfig
   throttle: ThrottleConfig
   assets: AssetsConfig
+  prerender: PrerenderConfig
 }
 
 function toList(value: string | undefined): string[] {
@@ -117,6 +124,11 @@ export function configuration(): Configuration {
       region: process.env.ASSETS_REGION ?? region,
       baseUrl: process.env.ASSETS_BASE_URL ?? '',
       urlTtl: Number(process.env.ASSETS_URL_TTL ?? 300),
+    },
+    prerender: {
+      functionName: process.env.PRERENDER_FUNCTION_NAME ?? '',
+      region: process.env.PRERENDER_REGION ?? process.env.ASSETS_REGION ?? 'eu-west-3',
+      debounceMs: Number(process.env.PRERENDER_DEBOUNCE_MS ?? 10000),
     },
   }
 }

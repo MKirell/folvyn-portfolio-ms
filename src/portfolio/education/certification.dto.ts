@@ -1,12 +1,5 @@
 import { PartialType } from '@nestjs/mapped-types'
-import { IsInt, IsOptional, IsString, MaxLength, Min } from 'class-validator'
-import { IsTranslationMap } from '@/common/dto/translations.dto'
-
-export class CertificationTranslationDto {
-  @IsString()
-  @MaxLength(40)
-  date: string
-}
+import { IsInt, IsOptional, IsString, Matches, MaxLength, Min } from 'class-validator'
 
 export class CreateCertificationDto {
   @IsOptional()
@@ -23,6 +16,10 @@ export class CreateCertificationDto {
   title: string
 
   @IsString()
+  @Matches(/^\d{4}-(0[1-9]|1[0-2])$/)
+  date: string
+
+  @IsString()
   @MaxLength(80)
   issuer: string
 
@@ -30,9 +27,6 @@ export class CreateCertificationDto {
   @IsString()
   @MaxLength(255)
   doc?: string | null
-
-  @IsTranslationMap(CertificationTranslationDto)
-  translations: Record<string, CertificationTranslationDto>
 }
 
 export class UpdateCertificationDto extends PartialType(CreateCertificationDto) {}

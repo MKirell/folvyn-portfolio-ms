@@ -2,7 +2,6 @@ import { PartialType } from '@nestjs/mapped-types'
 import {
   ArrayMaxSize,
   IsArray,
-  IsBoolean,
   IsInt,
   IsOptional,
   IsString,
@@ -12,6 +11,7 @@ import {
   Min,
 } from 'class-validator'
 import { IsTranslationMap } from '@/common/dto/translations.dto'
+import { CITY_MAX } from '@/common/dto/patterns'
 
 const MONTH_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/
 
@@ -21,7 +21,7 @@ export class ExperienceTranslationDto {
   role: string
 
   @IsArray()
-  @ArrayMaxSize(30)
+  @ArrayMaxSize(3)
   @IsString({ each: true })
   @MaxLength(300, { each: true })
   bullets: string[]
@@ -32,10 +32,6 @@ export class CreateExperienceDto {
   @IsInt()
   @Min(0)
   order?: number
-
-  @IsOptional()
-  @IsBoolean()
-  current?: boolean
 
   @IsString()
   @Matches(MONTH_PATTERN)
@@ -50,6 +46,11 @@ export class CreateExperienceDto {
   @IsString()
   @Matches(/^[A-Z]{2}$/)
   country?: string | null
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(CITY_MAX)
+  city?: string | null
 
   @IsString()
   @MaxLength(120)

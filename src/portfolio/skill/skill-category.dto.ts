@@ -20,17 +20,17 @@ export class CreateSkillCategoryDto {
 
   @IsOptional()
   @IsArray()
-  @ArrayMaxSize(40)
-  @IsString({ each: true })
-  @MaxLength(80, { each: true })
-  accentTags?: string[]
-
-  @IsOptional()
-  @IsArray()
   @ArrayMaxSize(60)
   @IsString({ each: true })
   @MaxLength(80, { each: true })
   tags?: string[]
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(40)
+  @IsString({ each: true })
+  @MaxLength(80, { each: true })
+  accentTags?: string[]
 
   @IsTranslationMap(SkillCategoryTranslationDto)
   translations: Record<string, SkillCategoryTranslationDto>

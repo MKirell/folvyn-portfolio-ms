@@ -132,7 +132,7 @@ describe('admin reads expose `id`, never `_id`', () => {
 
   it('ProfileService.find', async () => {
     const model = {
-      findOne: jest.fn().mockReturnValue(chain({ _id: objectId, highlightFocus: 'RAG' })),
+      findOne: jest.fn().mockReturnValue(chain({ _id: objectId, highlights: 'RAG' })),
     }
     const service = new ProfileService(model as unknown as Model<Profile>)
 

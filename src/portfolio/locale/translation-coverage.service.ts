@@ -5,8 +5,6 @@ import { ExperienceService } from '@/portfolio/experience/experience.service'
 import { ProjectService } from '@/portfolio/project/project.service'
 import { SkillCategoryService } from '@/portfolio/skill/skill-category.service'
 import { DegreeService } from '@/portfolio/education/degree.service'
-import { CertificationService } from '@/portfolio/education/certification.service'
-import { SpokenLanguageService } from '@/portfolio/education/spoken-language.service'
 import { VolunteeringService } from '@/portfolio/achievement/volunteering.service'
 import { AwardService } from '@/portfolio/achievement/award.service'
 
@@ -14,6 +12,7 @@ type Translated = { translations?: unknown }
 
 interface Source {
   label: string
+  fields: string[]
   read: (ownerId: string) => Promise<Translated[]>
 }
 
@@ -36,11 +35,9 @@ function isFilledValue(value: unknown): boolean {
   return false
 }
 
-function isFilled(entry: Record<string, unknown> | null): boolean {
+function isFilled(entry: Record<string, unknown> | null, fields: string[]): boolean {
   if (!entry) return false
-
-  const values = Object.values(entry)
-  return values.length > 0 && values.every(isFilledValue)
+  return fields.every((field) => isFilledValue(entry[field]))
 }
 
 @Injectable()
@@ -54,35 +51,41 @@ export class TranslationCoverageService {
     projectService: ProjectService,
     skillCategoryService: SkillCategoryService,
     degreeService: DegreeService,
-    certificationService: CertificationService,
-    spokenLanguageService: SpokenLanguageService,
     volunteeringService: VolunteeringService,
     awardService: AwardService,
   ) {
-    const one = (label: string, read: (ownerId: string) => Promise<Translated | null>): Source => ({
+    const one = (
+      label: string,
+      fields: string[],
+      read: (ownerId: string) => Promise<Translated | null>,
+    ): Source => ({
       label,
+      fields,
       read: async (ownerId) => {
         const found = await read(ownerId)
         return found ? [found] : []
       },
     })
 
-    const many = (label: string, read: (ownerId: string) => Promise<Translated[]>): Source => ({
-      label,
-      read,
-    })
+    const many = (
+      label: string,
+      fields: string[],
+      read: (ownerId: string) => Promise<Translated[]>,
+    ): Source => ({ label, fields, read })
 
     this.sources = [
-      one('person', (ownerId) => personService.findOptional(ownerId)),
-      one('hero & story', (ownerId) => profileService.findOptional(ownerId)),
-      many('experiences', (ownerId) => experienceService.findAll(ownerId)),
-      many('projects', (ownerId) => projectService.findAll(ownerId)),
-      many('skill categories', (ownerId) => skillCategoryService.findAll(ownerId)),
-      many('degrees', (ownerId) => degreeService.findAll(ownerId)),
-      many('certifications', (ownerId) => certificationService.findAll(ownerId)),
-      many('spoken languages', (ownerId) => spokenLanguageService.findAll(ownerId)),
-      many('volunteering', (ownerId) => volunteeringService.findAll(ownerId)),
-      many('awards', (ownerId) => awardService.findAll(ownerId)),
+      one('person', ['headline', 'aboutParagraphs'], (ownerId) =>
+        personService.findOptional(ownerId),
+      ),
+      one('hero & story', ['subtitles', 'tagline'], (ownerId) =>
+        profileService.findOptional(ownerId),
+      ),
+      many('experiences', ['role', 'bullets'], (ownerId) => experienceService.findAll(ownerId)),
+      many('projects', ['title', 'badge', 'desc'], (ownerId) => projectService.findAll(ownerId)),
+      many('skill categories', ['title'], (ownerId) => skillCategoryService.findAll(ownerId)),
+      many('degrees', ['title'], (ownerId) => degreeService.findAll(ownerId)),
+      many('volunteering', ['role', 'desc'], (ownerId) => volunteeringService.findAll(ownerId)),
+      many('awards', ['title'], (ownerId) => awardService.findAll(ownerId)),
     ]
   }
 
@@ -91,7 +94,7 @@ export class TranslationCoverageService {
       this.sources.map(async (source) => {
         const documents = await source.read(ownerId)
         const incomplete = documents.filter(
-          (document) => !isFilled(readTranslation(document.translations, code)),
+          (document) => !isFilled(readTranslation(document.translations, code), source.fields),
         )
         return incomplete.length > 0 ? source.label : null
       }),

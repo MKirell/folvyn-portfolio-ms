@@ -21,8 +21,8 @@ function human(overrides: Partial<AuthenticatedUser> = {}): AuthenticatedUser {
   return {
     id: 'sub-1',
     username: 'google_1105',
-    email: 'mohamed.khalil.zrelly@gmail.com',
-    displayName: 'Mohamed Khalil ZRELLY',
+    email: 'ada.lovelace@example.com',
+    displayName: 'Ada Lovelace',
     picture: null,
     roles: [],
     isMachine: false,
@@ -32,7 +32,7 @@ function human(overrides: Partial<AuthenticatedUser> = {}): AuthenticatedUser {
 
 describe('slug rules', () => {
   it('builds the address from the given and family name', () => {
-    expect(slugFromName('Mohamed Khalil', 'ZRELLY')).toBe('mohamed-khalil-zrelly')
+    expect(slugFromName('Ada', 'LOVELACE')).toBe('ada-lovelace')
   })
 
   it('folds accents rather than dropping the letter', () => {
@@ -61,7 +61,7 @@ describe('slug rules', () => {
   it.each([
     ['ab', /between 3 and 40/],
     ['a'.repeat(41), /between 3 and 40/],
-    ['Mohamed', /lowercase/],
+    ['Ada', /lowercase/],
     ['double--hyphen', /lowercase/],
     ['-leading', /lowercase/],
     ['trailing-', /lowercase/],
@@ -71,7 +71,7 @@ describe('slug rules', () => {
   })
 
   it('accepts an ordinary derived address', () => {
-    expect(slugProblem('mohamed-khalil-zrelly')).toBeNull()
+    expect(slugProblem('ada-lovelace')).toBeNull()
   })
 })
 
@@ -100,10 +100,10 @@ describe('OwnerService', () => {
     }
     identities = {
       describe: jest.fn().mockResolvedValue({
-        givenName: 'Mohamed Khalil',
-        familyName: 'ZRELLY',
-        name: 'Mohamed Khalil ZRELLY',
-        email: 'mohamed.khalil.zrelly@gmail.com',
+        givenName: 'Ada',
+        familyName: 'Lovelace',
+        name: 'Ada Lovelace',
+        email: 'ada.lovelace@example.com',
       }),
     }
     service = new OwnerService(
@@ -117,7 +117,7 @@ describe('OwnerService', () => {
       const created = await service.ensureForUser(human())
 
       expect(identities.describe).toHaveBeenCalledWith('google_1105')
-      expect(created.slug).toBe('mohamed-khalil-zrelly')
+      expect(created.slug).toBe('ada-lovelace')
       expect(created.status).toBeUndefined()
     })
 
@@ -129,7 +129,7 @@ describe('OwnerService', () => {
         email: null,
       })
 
-      const created = await service.ensureForUser(human({ displayName: 'Mohamed Khalil ZRELLY' }))
+      const created = await service.ensureForUser(human({ displayName: 'Ada Lovelace' }))
 
       expect(created.slug).toBe('someone-else')
     })
@@ -168,7 +168,7 @@ describe('OwnerService', () => {
 
       const created = await service.ensureForUser(human())
 
-      expect(created.slug).toBe('mohamed-khalil-zrelly-2')
+      expect(created.slug).toBe('ada-lovelace-2')
     })
 
     it('returns the existing owner instead of minting a second address', async () => {
@@ -185,11 +185,11 @@ describe('OwnerService', () => {
       model.findOne
         .mockReturnValueOnce(chain(null))
         .mockReturnValueOnce(chain(null))
-        .mockReturnValueOnce(chain({ _id: OWNER, slug: 'mohamed-khalil-zrelly' }))
+        .mockReturnValueOnce(chain({ _id: OWNER, slug: 'ada-lovelace' }))
       model.create.mockRejectedValue({ code: 11000 })
 
       await expect(service.ensureForUser(human())).resolves.toMatchObject({
-        slug: 'mohamed-khalil-zrelly',
+        slug: 'ada-lovelace',
       })
     })
 

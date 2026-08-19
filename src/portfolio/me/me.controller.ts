@@ -9,23 +9,31 @@ import {
   Patch,
   Post,
 } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
 import { CurrentOwner, OwnerId } from '@/common/decorators/current-owner.decorator'
 import { OwnerService } from '@/owner/owner.service'
 import { OwnerLifecycleService } from '@/portfolio/me/owner-lifecycle.service'
 import { SlugParamDto, UpdateMeDto } from '@/owner/owner.dto'
+import { assetPrefixFor } from '@/uploads/asset-prefix'
 import type { OwnerRecord, SlugAvailability } from '@/owner/owner.service'
 import type { OwnerExport } from '@/portfolio/me/owner-lifecycle.service'
+
+export type MeRecord = OwnerRecord & { assetPrefix: string }
 
 @Controller('me')
 export class MeController {
   constructor(
     private readonly owners: OwnerService,
     private readonly lifecycle: OwnerLifecycleService,
+    private readonly config: ConfigService,
   ) {}
 
   @Get()
-  find(@CurrentOwner() owner: OwnerRecord): OwnerRecord {
-    return owner
+  find(@CurrentOwner() owner: OwnerRecord): MeRecord {
+    return {
+      ...owner,
+      assetPrefix: assetPrefixFor(this.config.get<string>('assets.bucket'), String(owner.id)),
+    }
   }
 
   @Patch()

@@ -57,7 +57,7 @@ const cases: EntityCase[] = [
     route: 'experiences',
     token: ExperienceService,
     valid: {
-      company: 'Crédit Agricole',
+      company: 'Acme Corp',
       startDate: '2025-09',
       country: 'FR',
       tags: ['LangGraph'],
@@ -71,11 +71,13 @@ const cases: EntityCase[] = [
     route: 'projects',
     token: ProjectService,
     valid: {
-      title: 'CVision',
+      startDate: '2025-01',
       tags: ['RAG'],
-      translations: { en: { period: '2025', badge: 'Hybrid RAG', desc: 'A thing' } },
+      translations: {
+        en: { title: 'CVision', badge: 'Hybrid RAG', desc: 'A thing' },
+      },
     },
-    invalid: { title: 'CVision', translations: { en: { period: '2025' } } },
+    invalid: { tags: ['RAG'], translations: { en: { badge: 'Hybrid RAG' } } },
   },
   {
     name: 'skill categories',
@@ -93,10 +95,14 @@ const cases: EntityCase[] = [
     route: 'degrees',
     token: DegreeService,
     valid: {
-      years: '2024 — 2027',
-      translations: { en: { title: 'Engineering Degree', school: 'Sup Galilée' } },
+      startDate: '2024-09',
+      school: 'Example University',
+      country: 'TN',
+      city: 'Tunis',
+      honors: 'very-good',
+      translations: { en: { title: 'Engineering Degree' } },
     },
-    invalid: { years: '2024 — 2027' },
+    invalid: { startDate: '2024-09' },
   },
   {
     name: 'certifications',
@@ -106,7 +112,7 @@ const cases: EntityCase[] = [
       icon: 'Award',
       title: 'Build Multimodal GenAI',
       issuer: 'IBM',
-      translations: { en: { date: 'Mar 2025' } },
+      date: '2025-03',
     },
     invalid: { icon: 'Award', title: 'X', issuer: 'IBM' },
   },
@@ -115,14 +121,16 @@ const cases: EntityCase[] = [
     route: 'spoken-languages',
     token: SpokenLanguageService,
     valid: {
-      flagCode: 'gb',
+      country: 'GB',
       pct: 80,
-      translations: { en: { name: 'English', level: 'B2' } },
+      code: 'en',
+      level: 'b2',
     },
     invalid: {
-      flagCode: 'gb',
+      country: 'GB',
       pct: 140,
-      translations: { en: { name: 'English', level: 'B2' } },
+      code: 'en',
+      level: 'b2',
     },
   },
   {
@@ -130,10 +138,11 @@ const cases: EntityCase[] = [
     route: 'volunteering',
     token: VolunteeringService,
     valid: {
-      org: 'Enactus',
-      translations: { en: { role: 'Member', period: '2023', desc: 'Helped out' } },
+      startDate: '2023-01',
+      org: 'Globex',
+      translations: { en: { role: 'Member', desc: 'Helped out' } },
     },
-    invalid: { org: 'Enactus', translations: {} },
+    invalid: { org: 'Globex', translations: {} },
   },
   {
     name: 'awards',
@@ -141,11 +150,11 @@ const cases: EntityCase[] = [
     token: AwardService,
     valid: {
       icon: 'Trophy',
-      flagCode: 'nl',
       images: ['a.jpg'],
-      translations: { en: { title: 'Vice Champions', place: 'Netherlands' } },
+      country: 'NL',
+      translations: { en: { title: 'Vice Champions' } },
     },
-    invalid: { icon: 'Trophy', flagCode: 'NETHERLANDS', translations: { en: { title: 'X' } } },
+    invalid: { icon: 'Trophy', country: 'NETHERLANDS', translations: { en: { title: 'X' } } },
   },
 ]
 
@@ -165,9 +174,9 @@ describe('admin controllers', () => {
       update: jest.fn().mockResolvedValue({ givenName: 'Owner' }),
     }
     profileService = {
-      find: jest.fn().mockResolvedValue({ highlightFocus: ['RAG'] }),
+      find: jest.fn().mockResolvedValue({ translations: {} }),
       upsert: jest.fn().mockImplementation((dto: unknown) => Promise.resolve(dto)),
-      update: jest.fn().mockResolvedValue({ highlightFocus: ['RAG'] }),
+      update: jest.fn().mockResolvedValue({ translations: {} }),
     }
 
     const moduleRef = await Test.createTestingModule({
@@ -255,7 +264,9 @@ describe('admin controllers', () => {
         .expect(400)
     })
 
-    it('rejects a translation keyed by something that is not a language code', async () => {
+    const translated = entity.valid.translations ? it : it.skip
+
+    translated('rejects a translation keyed by something that is not a language code', async () => {
       await request(app.getHttpServer())
         .post(base)
         .send({
@@ -265,7 +276,7 @@ describe('admin controllers', () => {
         .expect(400)
     })
 
-    it('rejects an empty translation map', async () => {
+    translated('rejects an empty translation map', async () => {
       await request(app.getHttpServer())
         .post(base)
         .send({ ...entity.valid, translations: {} })
@@ -307,22 +318,21 @@ describe('admin controllers', () => {
 
   describe('person', () => {
     const valid = {
-      givenName: 'Mohamed Khalil',
-      familyName: 'ZRELLY',
+      givenName: 'Ada',
+      familyName: 'Lovelace',
       email: 'owner@example.com',
       phone: '+33758215856',
       linkedin: 'https://www.linkedin.com/in/x/',
-      github: 'https://github.com/MKirell',
-      affiliation: 'Crédit Agricole',
-      city: 'Paris',
+      github: 'https://github.com/adalovelace',
+      affiliation: 'Acme Corp',
       country: 'FR',
+      city: 'Paris',
       photo: 'off-image.jpeg',
       resumes: { en: 'resume_en.pdf' },
       translations: {
         en: {
           headline: 'Engineer',
           aboutParagraphs: ['A paragraph'],
-          contactDesc: 'Say hello',
         },
       },
     }
@@ -402,8 +412,6 @@ describe('admin controllers', () => {
 
   describe('profile', () => {
     const valid = {
-      highlights: ['LangGraph', 'RAG'],
-      highlightFocus: ['RAG'],
       translations: {
         en: {
           subtitles: ['Generative AI Engineer'],
@@ -439,7 +447,7 @@ describe('admin controllers', () => {
     it('patches the narrative', async () => {
       await request(app.getHttpServer())
         .patch('/admin/profile')
-        .send({ highlightFocus: ['RAG'] })
+        .send({ translations: { en: { subtitles: ['X'], tagline: 'Y' } } })
         .expect(200)
       expect(profileService.update).toHaveBeenCalled()
     })

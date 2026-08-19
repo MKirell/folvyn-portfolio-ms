@@ -123,8 +123,8 @@ describe('ProfileService', () => {
 
   beforeEach(() => {
     model = {
-      findOne: jest.fn().mockReturnValue(chain({ highlightFocus: 'RAG' })),
-      findOneAndUpdate: jest.fn().mockReturnValue(chain({ highlightFocus: 'RAG' })),
+      findOne: jest.fn().mockReturnValue(chain({ highlights: 'RAG' })),
+      findOneAndUpdate: jest.fn().mockReturnValue(chain({ highlights: 'RAG' })),
       deleteMany: jest
         .fn()
         .mockReturnValue({ exec: jest.fn().mockResolvedValue({ deletedCount: 1 }) }),
@@ -154,7 +154,7 @@ describe('ProfileService', () => {
   it('reports a missing profile on partial update', async () => {
     model.findOneAndUpdate.mockReturnValue(chain(null))
 
-    await expect(service.update(OWNER, { highlightFocus: ['RAG'] })).rejects.toBeInstanceOf(
+    await expect(service.update(OWNER, { subtitles: ['RAG'] } as never)).rejects.toBeInstanceOf(
       NotFoundException,
     )
   })
@@ -177,8 +177,8 @@ describe('LocaleService', () => {
     model = {
       find: jest.fn().mockReturnValue(
         chain([
-          { code: 'en', label: 'EN', flagCode: 'gb', order: 0 },
-          { code: 'fr', label: 'FR', flagCode: 'fr', order: 1 },
+          { code: 'en', flagCode: 'gb', order: 0 },
+          { code: 'fr', flagCode: 'fr', order: 1 },
         ]),
       ),
       exists: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue({ _id: 'x' }) }),
@@ -194,8 +194,8 @@ describe('LocaleService', () => {
       ownerId: new Types.ObjectId(OWNER),
     })
     expect(result).toEqual([
-      { code: 'en', label: 'EN', flagCode: 'gb' },
-      { code: 'fr', label: 'FR', flagCode: 'fr' },
+      { code: 'en', flagCode: 'gb' },
+      { code: 'fr', flagCode: 'fr' },
     ])
   })
 

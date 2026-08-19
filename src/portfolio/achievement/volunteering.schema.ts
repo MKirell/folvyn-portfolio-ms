@@ -9,9 +9,6 @@ export class VolunteeringTranslation {
   role: string
 
   @Prop({ required: true, trim: true })
-  period: string
-
-  @Prop({ required: true, trim: true })
   desc: string
 }
 
@@ -24,6 +21,12 @@ export class Volunteering {
 
   @Prop({ required: true, default: 0, min: 0 })
   order: number
+
+  @Prop({ required: true, trim: true })
+  startDate: string
+
+  @Prop({ type: String, default: null, trim: true })
+  endDate: string | null
 
   @Prop({ required: true, trim: true })
   org: string

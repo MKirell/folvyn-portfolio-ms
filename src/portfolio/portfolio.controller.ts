@@ -8,6 +8,12 @@ import { LangQueryDto } from '@/portfolio/portfolio.dto'
 import { SlugParamDto } from '@/owner/owner.dto'
 import type { LocaleSummary, ResolvedPortfolio } from '@/common/types/portfolio.types'
 
+export interface PublishedPortfolio {
+  slug: string
+  langs: string[]
+  updatedAt: string | null
+}
+
 export interface PortfolioMeta {
   slug: string
   published: boolean
@@ -28,6 +34,19 @@ export class PortfolioController {
   async findDefault(@Query() query: LangQueryDto): Promise<ResolvedPortfolio> {
     const owner = await this.defaultOwner()
     return this.portfolioService.resolve(owner.id, query.lang, owner.slug, owner.consentMode)
+  }
+
+  @Get('published')
+  async published(): Promise<PublishedPortfolio[]> {
+    const owners = await this.owners.findPublished()
+
+    return Promise.all(
+      owners.map(async (owner) => ({
+        slug: owner.slug,
+        langs: (await this.localeService.findEnabled(owner.id)).map((locale) => locale.code),
+        updatedAt: owner.updatedAt ? new Date(owner.updatedAt).toISOString() : null,
+      })),
+    )
   }
 
   @Get('languages')

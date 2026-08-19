@@ -35,7 +35,7 @@ describe('SanitizeMiddleware', () => {
 
   it('leaves legitimate payloads untouched', () => {
     const payload = {
-      company: 'Crédit Agricole',
+      company: 'Acme Corp',
       tags: ['LangGraph', 'RAG'],
       translations: { en: { role: 'Engineer', bullets: ['Built things'] } },
     }

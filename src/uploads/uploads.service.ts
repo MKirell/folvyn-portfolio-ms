@@ -72,7 +72,9 @@ export class UploadsService {
   }
 
   async list(ownerId: string): Promise<AssetObject[]> {
-    const bucket = this.assertConfigured()
+    if (!this.assets.bucket) return []
+
+    const bucket = this.assets.bucket
     const objects: AssetObject[] = []
 
     for (const folder of ASSET_FOLDERS) {

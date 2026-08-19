@@ -11,6 +11,7 @@ import {
   MaxLength,
 } from 'class-validator'
 import { IsTranslationMap } from '@/common/dto/translations.dto'
+import { CITY_MAX, COUNTRY_PATTERN } from '@/common/dto/patterns'
 
 export class PersonTranslationDto {
   @IsString()
@@ -22,10 +23,6 @@ export class PersonTranslationDto {
   @IsString({ each: true })
   @MaxLength(320, { each: true })
   aboutParagraphs: string[]
-
-  @IsString()
-  @MaxLength(220)
-  contactDesc: string
 }
 
 export class UpsertPersonDto {
@@ -55,12 +52,12 @@ export class UpsertPersonDto {
   affiliation: string
 
   @IsString()
-  @MaxLength(80)
-  city: string
+  @Matches(COUNTRY_PATTERN)
+  country: string
 
   @IsString()
-  @Matches(/^[A-Z]{2}$/)
-  country: string
+  @MaxLength(CITY_MAX)
+  city: string
 
   @IsString()
   @MaxLength(255)

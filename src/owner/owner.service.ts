@@ -14,7 +14,7 @@ import type { FederatedIdentity } from '@/auth/identity.directory'
 import type { UpdateMeDto } from '@/owner/owner.dto'
 import type { AuthenticatedUser } from '@/common/types/authenticated-user'
 
-export type OwnerRecord = Owner & { id: string }
+export type OwnerRecord = Owner & { id: string; updatedAt?: Date | string }
 
 export interface SlugAvailability {
   slug: string
@@ -57,6 +57,16 @@ export class OwnerService {
       .exec()
     if (!owner) throw new NotFoundException('No published portfolio lives at this address')
     return toPlain(owner)
+  }
+
+  async findPublished(): Promise<OwnerRecord[]> {
+    const owners = await this.model
+      .find({ status: 'published' })
+      .sort({ slug: 1 })
+      .lean<OwnerRecord[]>()
+      .exec()
+
+    return owners.map(toPlain)
   }
 
   async isSlugTaken(slug: string): Promise<boolean> {

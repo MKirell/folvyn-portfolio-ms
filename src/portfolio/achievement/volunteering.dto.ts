@@ -1,15 +1,12 @@
 import { PartialType } from '@nestjs/mapped-types'
-import { IsInt, IsOptional, IsString, IsUrl, MaxLength, Min } from 'class-validator'
+import { IsInt, IsOptional, IsString, IsUrl, Matches, MaxLength, Min } from 'class-validator'
 import { IsTranslationMap } from '@/common/dto/translations.dto'
+import { MONTH_PATTERN } from '@/common/dto/patterns'
 
 export class VolunteeringTranslationDto {
   @IsString()
   @MaxLength(100)
   role: string
-
-  @IsString()
-  @MaxLength(60)
-  period: string
 
   @IsString()
   @MaxLength(300)
@@ -21,6 +18,15 @@ export class CreateVolunteeringDto {
   @IsInt()
   @Min(0)
   order?: number
+
+  @IsString()
+  @Matches(MONTH_PATTERN)
+  startDate: string
+
+  @IsOptional()
+  @IsString()
+  @Matches(MONTH_PATTERN)
+  endDate?: string | null
 
   @IsString()
   @MaxLength(80)

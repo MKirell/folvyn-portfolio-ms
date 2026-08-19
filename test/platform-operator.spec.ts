@@ -4,6 +4,7 @@ import { ConflictException, NotFoundException } from '@nestjs/common'
 import { Owner } from '@/owner/owner.schema'
 import { OwnerService } from '@/owner/owner.service'
 import { OwnerLifecycleService } from '@/portfolio/me/owner-lifecycle.service'
+import { IdentityDirectory } from '@/auth/identity.directory'
 import { AuditEntry } from '@/platform/audit.schema'
 import { AnalyticsDaily } from '@/analytics/schemas/analytics-daily.schema'
 import { AnalyticsEvent } from '@/analytics/schemas/analytics-event.schema'
@@ -12,7 +13,7 @@ import { PlatformService, editDistance, toCascade, ttlOf } from '@/platform/plat
 import type { AuthenticatedUser } from '@/common/types/authenticated-user'
 
 const OWNER = '507f1f77bcf86cd799439021'
-const ACTOR = { id: 'operator-sub', email: 'admin@mkirell.com' } as AuthenticatedUser
+const ACTOR = { id: 'operator-sub', email: 'ada.lovelace@example.com' } as AuthenticatedUser
 
 function chain(rows: unknown[]) {
   const result = {
@@ -115,6 +116,10 @@ describe('operator service', () => {
           },
         },
         { provide: OwnerLifecycleService, useValue: lifecycle },
+        {
+          provide: IdentityDirectory,
+          useValue: { describe: jest.fn().mockResolvedValue({ email: null }) },
+        },
       ],
     }).compile()
 
@@ -169,7 +174,7 @@ describe('operator service', () => {
       ownerId: OWNER,
       slug: 'jane-doe',
       reason: 'subject asked',
-      requestedBy: 'admin@mkirell.com',
+      requestedBy: 'ada.lovelace@example.com',
       state: 'pending',
       dueAt: new Date(Date.now() + 86_400_000),
       completedAt: null,

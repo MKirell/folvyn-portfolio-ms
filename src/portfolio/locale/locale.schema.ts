@@ -13,9 +13,6 @@ export class Locale {
   code: string
 
   @Prop({ required: true, trim: true })
-  label: string
-
-  @Prop({ required: true, trim: true })
   flagCode: string
 
   @Prop({ required: true, default: true })

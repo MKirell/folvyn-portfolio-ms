@@ -1,15 +1,11 @@
 import { PartialType } from '@nestjs/mapped-types'
-import { IsBoolean, IsInt, IsOptional, IsString, Matches, MaxLength, Min } from 'class-validator'
+import { IsBoolean, IsInt, IsOptional, IsString, Matches, Min } from 'class-validator'
 import { LANG_PATTERN } from '@/common/types/portfolio.types'
 
 export class CreateLocaleDto {
   @IsString()
   @Matches(LANG_PATTERN)
   code: string
-
-  @IsString()
-  @MaxLength(20)
-  label: string
 
   @IsString()
   @Matches(/^[a-z]{2}$/)

@@ -10,21 +10,12 @@ import {
   Min,
 } from 'class-validator'
 import { IsTranslationMap } from '@/common/dto/translations.dto'
+import { CITY_MAX } from '@/common/dto/patterns'
 
 export class AwardTranslationDto {
   @IsString()
   @MaxLength(120)
   title: string
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(80)
-  place?: string | null
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(40)
-  date?: string | null
 }
 
 export class CreateAwardDto {
@@ -39,8 +30,18 @@ export class CreateAwardDto {
 
   @IsOptional()
   @IsString()
-  @Matches(/^[a-z]{2}$/)
-  flagCode?: string | null
+  @Matches(/^[A-Z]{2}$/)
+  country?: string | null
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(CITY_MAX)
+  city?: string | null
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^\d{4}-(0[1-9]|1[0-2])$/)
+  date?: string | null
 
   @IsOptional()
   @IsArray()
@@ -48,11 +49,6 @@ export class CreateAwardDto {
   @IsString({ each: true })
   @MaxLength(255, { each: true })
   images?: string[]
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(255)
-  doc?: string | null
 
   @IsTranslationMap(AwardTranslationDto)
   translations: Record<string, AwardTranslationDto>

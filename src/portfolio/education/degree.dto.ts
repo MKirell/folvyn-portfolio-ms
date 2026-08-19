@@ -1,26 +1,13 @@
 import { PartialType } from '@nestjs/mapped-types'
-import { IsInt, IsOptional, IsString, IsUrl, MaxLength, Min } from 'class-validator'
+import { IsIn, IsInt, IsOptional, IsString, IsUrl, Matches, MaxLength, Min } from 'class-validator'
 import { IsTranslationMap } from '@/common/dto/translations.dto'
+import { CITY_MAX, COUNTRY_PATTERN, MONTH_PATTERN } from '@/common/dto/patterns'
+import { HONORS } from '@/common/dto/vocabularies'
 
 export class DegreeTranslationDto {
   @IsString()
   @MaxLength(120)
   title: string
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(120)
-  school?: string | null
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(80)
-  location?: string | null
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(80)
-  mention?: string | null
 }
 
 export class CreateDegreeDto {
@@ -30,8 +17,32 @@ export class CreateDegreeDto {
   order?: number
 
   @IsString()
-  @MaxLength(30)
-  years: string
+  @Matches(MONTH_PATTERN)
+  startDate: string
+
+  @IsOptional()
+  @IsString()
+  @Matches(MONTH_PATTERN)
+  endDate?: string | null
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  school?: string | null
+
+  @IsOptional()
+  @IsString()
+  @Matches(COUNTRY_PATTERN)
+  country?: string | null
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(CITY_MAX)
+  city?: string | null
+
+  @IsOptional()
+  @IsIn(HONORS)
+  honors?: string | null
 
   @IsOptional()
   @IsString()

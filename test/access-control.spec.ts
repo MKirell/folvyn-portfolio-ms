@@ -31,16 +31,16 @@ import {
 } from './support/cognito-token'
 
 const validExperience = {
-  company: 'Crédit Agricole',
+  company: 'Acme Corp',
   startDate: '2025-09',
   country: 'FR',
   tags: ['LangGraph'],
   translations: {
-    en: { role: 'GenAI Engineer', bullets: ['Built things'] },
+    en: { role: 'Backend Engineer', bullets: ['Built things'] },
   },
 }
 
-const SLUG = 'mohamed-khalil-zrelly'
+const SLUG = 'ada-lovelace'
 const OWNER = '507f1f77bcf86cd799439021'
 
 describe('read/write access control', () => {

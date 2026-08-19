@@ -25,8 +25,20 @@ const LIST_SERVICES = [
   AwardService,
 ]
 
+const FILLED = {
+  title: 'Done',
+  headline: 'Done',
+  aboutParagraphs: ['Done'],
+  subtitles: ['Done'],
+  tagline: 'Done',
+  role: 'Done',
+  bullets: ['Done'],
+  badge: 'Done',
+  desc: 'Done',
+}
+
 function both(): Record<string, unknown> {
-  return { en: { title: 'Done' }, fr: { title: 'Fait' } }
+  return { en: { ...FILLED }, fr: { ...FILLED } }
 }
 
 describe('TranslationCoverageService', () => {
@@ -101,7 +113,9 @@ describe('TranslationCoverageService', () => {
   })
 
   it('reads a Mongoose Map the same way as a plain object', async () => {
-    experiences.findAll.mockResolvedValue([{ translations: new Map([['fr', { title: 'Fait' }]]) }])
+    experiences.findAll.mockResolvedValue([
+      { translations: new Map([['fr', { ...FILLED }]]) },
+    ])
 
     await expect(service.missingFor(OWNER, 'fr')).resolves.toEqual([])
   })

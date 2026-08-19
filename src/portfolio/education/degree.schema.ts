@@ -7,15 +7,6 @@ import { ownerIdProp } from '@/common/schemas/owned'
 export class DegreeTranslation {
   @Prop({ required: true, trim: true })
   title: string
-
-  @Prop({ type: String, default: null, trim: true })
-  school: string | null
-
-  @Prop({ type: String, default: null, trim: true })
-  location: string | null
-
-  @Prop({ type: String, default: null, trim: true })
-  mention: string | null
 }
 
 export const DegreeTranslationSchema = SchemaFactory.createForClass(DegreeTranslation)
@@ -29,7 +20,22 @@ export class Degree {
   order: number
 
   @Prop({ required: true, trim: true })
-  years: string
+  startDate: string
+
+  @Prop({ type: String, default: null, trim: true })
+  endDate: string | null
+
+  @Prop({ type: String, default: null, trim: true })
+  school: string | null
+
+  @Prop({ type: String, default: null, trim: true, uppercase: true })
+  country: string | null
+
+  @Prop({ type: String, default: null, trim: true })
+  city: string | null
+
+  @Prop({ type: String, default: null, trim: true })
+  honors: string | null
 
   @Prop({ type: String, default: null, trim: true })
   doc: string | null

@@ -10,9 +10,6 @@ export class PersonTranslation {
 
   @Prop({ type: [String], default: [] })
   aboutParagraphs: string[]
-
-  @Prop({ required: true, trim: true })
-  contactDesc: string
 }
 
 export const PersonTranslationSchema = SchemaFactory.createForClass(PersonTranslation)
@@ -43,11 +40,11 @@ export class Person {
   @Prop({ required: true, trim: true })
   affiliation: string
 
-  @Prop({ required: true, trim: true })
-  city: string
-
   @Prop({ required: true, trim: true, uppercase: true })
   country: string
+
+  @Prop({ required: true, trim: true })
+  city: string
 
   @Prop({ required: true, trim: true })
   photo: string

@@ -22,9 +22,6 @@ export class Experience {
   @Prop({ required: true, default: 0, min: 0 })
   order: number
 
-  @Prop({ required: true, default: false })
-  current: boolean
-
   @Prop({ required: true, trim: true })
   startDate: string
 
@@ -33,6 +30,9 @@ export class Experience {
 
   @Prop({ type: String, default: null, trim: true, uppercase: true })
   country: string | null
+
+  @Prop({ type: String, default: null, trim: true })
+  city: string | null
 
   @Prop({ required: true, trim: true })
   company: string

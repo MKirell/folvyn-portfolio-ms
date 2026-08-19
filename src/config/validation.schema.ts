@@ -45,6 +45,10 @@ export const validationSchema = Joi.object({
   COGNITO_JWKS_RATE_LIMIT: Joi.number().min(1).default(10),
   COGNITO_JWKS_TIMEOUT: Joi.number().min(100).default(5000),
 
+  PRERENDER_FUNCTION_NAME: Joi.string().allow('').default(''),
+  PRERENDER_REGION: Joi.string().allow('').optional(),
+  PRERENDER_DEBOUNCE_MS: Joi.number().min(0).max(120000).default(10000),
+
   THROTTLE_TTL: Joi.number().default(60000),
   THROTTLE_LIMIT: Joi.number().default(120),
 

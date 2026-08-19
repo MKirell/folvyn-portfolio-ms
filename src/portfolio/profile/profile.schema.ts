@@ -19,12 +19,6 @@ export class Profile {
   @Prop(ownerIdUniqueProp)
   ownerId: Types.ObjectId
 
-  @Prop({ type: [String], default: [] })
-  highlights: string[]
-
-  @Prop({ type: [String], default: [], trim: true })
-  highlightFocus: string[]
-
   @Prop({ type: Map, of: ProfileTranslationSchema, required: true })
   translations: Map<string, ProfileTranslation>
 }

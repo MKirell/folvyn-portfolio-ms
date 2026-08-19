@@ -6,15 +6,17 @@ import {
   IsOptional,
   IsString,
   IsUrl,
+  Matches,
   MaxLength,
   Min,
 } from 'class-validator'
 import { IsTranslationMap } from '@/common/dto/translations.dto'
+import { MONTH_PATTERN } from '@/common/dto/patterns'
 
 export class ProjectTranslationDto {
   @IsString()
-  @MaxLength(60)
-  period: string
+  @MaxLength(80)
+  title: string
 
   @IsString()
   @MaxLength(60)
@@ -32,8 +34,13 @@ export class CreateProjectDto {
   order?: number
 
   @IsString()
-  @MaxLength(80)
-  title: string
+  @Matches(MONTH_PATTERN)
+  startDate: string
+
+  @IsOptional()
+  @IsString()
+  @Matches(MONTH_PATTERN)
+  endDate?: string | null
 
   @IsOptional()
   @IsArray()

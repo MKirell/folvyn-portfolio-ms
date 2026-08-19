@@ -16,21 +16,21 @@ import { AwardService } from '@/portfolio/achievement/award.service'
 
 const person = {
   _id: 'person-id',
-  givenName: 'Mohamed Khalil',
-  familyName: 'ZRELLY',
+  givenName: 'Ada',
+  familyName: 'Lovelace',
   resumes: { en: 'resume_en.pdf', fr: 'resume_fr.pdf' },
   createdAt: new Date(),
   updatedAt: new Date(),
   translations: {
-    en: { headline: 'Generative AI Engineer Apprentice', description: 'English bio' },
-    fr: { headline: 'Apprenti Ingénieur IA Générative', description: 'Bio française' },
+    en: { headline: 'Backend Engineer', description: 'English bio' },
+    fr: { headline: 'Apprenti Ingénieur backend Générative', description: 'Bio française' },
   },
 }
 
 const profile = {
   _id: 'profile-id',
-  highlights: ['LangGraph', 'RAG'],
-  highlightFocus: 'RAG',
+  tags: ['LangGraph', 'RAG'],
+  highlights: 'RAG',
   translations: {
     en: {
       subtitles: ['Generative AI Engineer'],
@@ -39,7 +39,7 @@ const profile = {
       contactDesc: 'Get in touch',
     },
     fr: {
-      subtitles: ['Ingénieur IA Générative'],
+      subtitles: ['Ingénieur backend Générative'],
       tagline: 'Accroche française',
       aboutParagraphs: ['Premier paragraphe'],
       contactDesc: 'Écrivez-moi',
@@ -55,13 +55,13 @@ const experiences = [
     startDate: '2025-09',
     endDate: null,
     country: 'FR',
-    company: 'Crédit Agricole',
+    company: 'Acme Corp',
     tags: ['LangGraph'],
     doc: null,
     link: 'https://linkedin.com/company/ca',
     translations: {
-      en: { role: 'GenAI Engineer', bullets: ['Built things'] },
-      fr: { role: 'Ingénieur IA', bullets: ['Développé'] },
+      en: { role: 'Backend Engineer', bullets: ['Built things'] },
+      fr: { role: 'Ingénieur backend', bullets: ['Développé'] },
     },
   },
 ]
@@ -133,8 +133,8 @@ describe('PortfolioService', () => {
 
     expect(result.lang).toBe('fr')
     expect(result.experiences[0]).toMatchObject({
-      company: 'Crédit Agricole',
-      role: 'Ingénieur IA',
+      company: 'Acme Corp',
+      role: 'Ingénieur backend',
       startDate: '2025-09',
       current: true,
     })
@@ -177,7 +177,7 @@ describe('PortfolioService', () => {
 
     expect(result.profile.aboutParagraphs).toEqual(['First paragraph', 'Second paragraph'])
     expect(result.profile.tagline).toBe('English tagline')
-    expect(result.profile.highlightFocus).toBe('RAG')
+    expect(result.profile.highlights).toBe('RAG')
     expect(result.profile).not.toHaveProperty('translations')
   })
 

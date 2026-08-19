@@ -34,6 +34,5 @@ export interface ResolvedPortfolio {
 
 export interface LocaleSummary {
   code: string
-  label: string
   flagCode: string
 }

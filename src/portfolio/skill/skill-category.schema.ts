@@ -23,10 +23,10 @@ export class SkillCategory {
   icon: string
 
   @Prop({ type: [String], default: [] })
-  accentTags: string[]
+  tags: string[]
 
   @Prop({ type: [String], default: [] })
-  tags: string[]
+  accentTags: string[]
 
   @Prop({ type: Map, of: SkillCategoryTranslationSchema, required: true })
   translations: Map<string, SkillCategoryTranslation>

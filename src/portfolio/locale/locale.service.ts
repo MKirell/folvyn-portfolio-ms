@@ -15,10 +15,10 @@ export class LocaleService extends BaseCrudService<Locale> {
     const locales = await this.model
       .find(this.scoped(ownerId, { enabled: true }))
       .sort({ order: 1 })
-      .select('code label flagCode')
+      .select('code flagCode')
       .lean<LocaleSummary[]>()
       .exec()
-    return locales.map(({ code, label, flagCode }) => ({ code, label, flagCode }))
+    return locales.map(({ code, flagCode }) => ({ code, flagCode }))
   }
 
   async isSupported(ownerId: string, code: string): Promise<boolean> {

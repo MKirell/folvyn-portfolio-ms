@@ -3,6 +3,7 @@ import { InjectConnection, InjectModel } from '@nestjs/mongoose'
 import { Connection, FilterQuery, Model, Types } from 'mongoose'
 import { Owner } from '@/owner/owner.schema'
 import { OwnerService } from '@/owner/owner.service'
+import { IdentityDirectory } from '@/auth/identity.directory'
 import { OwnerLifecycleService } from '@/portfolio/me/owner-lifecycle.service'
 import { AuditEntry, type AuditAction, type AuditEntryDocument } from '@/platform/audit.schema'
 import {
@@ -107,7 +108,7 @@ export interface PlatformConfig {
   reservedSlugs: string[]
   limits: { slugMin: number; slugMax: number; reasonMax: number; erasureDeadlineDays: number }
   retention: { rawEventDays: number; rollupMonths: number }
-  environment: { nodeEnv: string; database: string; image: string }
+  environment: { nodeEnv: string; name: string; database: string; image: string }
   runtime: ConfigEntry[]
   ingest: ConfigEntry[]
   privacy: ConfigEntry[]
@@ -178,6 +179,15 @@ export function toCascade(result: unknown): Record<string, number> {
   return Object.fromEntries(ERASURE_STORES.map((store) => [store, 0]))
 }
 
+/**
+ * The deployment a reader is looking at, which NODE_ENV alone cannot tell them:
+ * dev and production both run as 'production', and only the site they serve differs.
+ */
+export function environmentName(siteUrl: string): string {
+  if ((process.env.NODE_ENV ?? 'development') !== 'production') return 'Local'
+  return /(^|\/\/|\.)([a-z0-9-]*-)?dev\./i.test(siteUrl) ? 'Development' : 'Production'
+}
+
 @Injectable()
 export class PlatformService {
   constructor(
@@ -189,6 +199,7 @@ export class PlatformService {
     @InjectConnection() private readonly connection: Connection,
     private readonly ownerService: OwnerService,
     private readonly lifecycle: OwnerLifecycleService,
+    private readonly identities: IdentityDirectory,
   ) {}
 
   async portfolios(query: PortfolioQueryDto): Promise<PortfolioRow[]> {
@@ -495,6 +506,7 @@ export class PlatformService {
       retention: { rawEventDays: 30, rollupMonths: ROLLUP_RETENTION_MONTHS },
       environment: {
         nodeEnv: process.env.NODE_ENV ?? 'unknown',
+        name: environmentName(process.env.SITE_URL ?? ''),
         database: this.connection.name,
         image: process.env.APP_IMAGE_TAG ?? 'local',
       },
@@ -688,12 +700,23 @@ export class PlatformService {
   ): Promise<void> {
     await this.audit.create({
       actorSub: actor.id,
-      actorEmail: actor.email,
+      actorEmail: await this.actorEmail(actor),
       action,
       targetOwnerId: targetOwnerId ? new Types.ObjectId(targetOwnerId) : null,
       targetSlug,
       reason,
     })
+  }
+
+  private async actorEmail(actor: AuthenticatedUser): Promise<string | null> {
+    if (actor.email) return actor.email
+
+    try {
+      const identity = await this.identities.describe(actor.username)
+      return identity.email
+    } catch {
+      return null
+    }
   }
 
   private async sessionsByOwner(ids: Types.ObjectId[]): Promise<Map<string, number>> {
