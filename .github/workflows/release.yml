@@ -87,6 +87,14 @@ jobs:
             --publish >/dev/null
           aws lambda wait function-updated --function-name "$FUNCTION"
 
+          current=$(aws lambda get-function-configuration --function-name "$FUNCTION" \
+            --query 'Environment.Variables' --output json)
+          aws lambda update-function-configuration \
+            --function-name "$FUNCTION" \
+            --environment "Variables=$(echo "$current" | jq -c --arg tag "$TAG" '. + {APP_IMAGE_TAG: $tag}')" \
+            >/dev/null
+          aws lambda wait function-updated --function-name "$FUNCTION"
+
       - name: Smoke test
         run: |
           for i in $(seq 1 10); do

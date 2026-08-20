@@ -153,6 +153,7 @@ describe('listing portfolios', () => {
       createdAt: '2026-07-01T00:00:00.000Z',
       publishedAt: '2026-08-01T00:00:00.000Z',
       sessions: 0,
+      visitors: 0,
     })
   })
 

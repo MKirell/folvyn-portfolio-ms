@@ -158,6 +158,7 @@ export interface PortfolioRow {
   createdAt: string | null
   publishedAt: string | null
   sessions: number
+  visitors: number
 }
 
 interface TtlIndex {
@@ -220,7 +221,7 @@ export class PlatformService {
       .lean<(Owner & { _id: Types.ObjectId; createdAt?: Date })[]>()
       .exec()
 
-    const sessions = await this.sessionsByOwner(rows.map((row) => row._id))
+    const traffic = await this.trafficByOwner(rows.map((row) => row._id))
 
     return rows.map((row) => ({
       id: String(row._id),
@@ -230,7 +231,8 @@ export class PlatformService {
       status: row.status,
       createdAt: row.createdAt ? row.createdAt.toISOString() : null,
       publishedAt: row.publishedAt ? new Date(row.publishedAt).toISOString() : null,
-      sessions: sessions.get(String(row._id)) ?? 0,
+      sessions: traffic.get(String(row._id))?.sessions ?? 0,
+      visitors: traffic.get(String(row._id))?.visitors ?? 0,
     }))
   }
 
@@ -511,7 +513,7 @@ export class PlatformService {
         nodeEnv: process.env.NODE_ENV ?? 'unknown',
         name: environmentName(process.env.APP_ENV),
         database: this.connection.name,
-        image: process.env.APP_IMAGE_TAG ?? 'local',
+        image: process.env.APP_IMAGE_TAG || 'local',
       },
       runtime: [
         {
@@ -722,15 +724,31 @@ export class PlatformService {
     }
   }
 
-  private async sessionsByOwner(ids: Types.ObjectId[]): Promise<Map<string, number>> {
+  private async trafficByOwner(
+    ids: Types.ObjectId[],
+  ): Promise<Map<string, { sessions: number; visitors: number }>> {
     if (ids.length === 0) return new Map()
 
-    const from = new Date(Date.now() - TRAFFIC_WINDOW_DAYS * 86_400_000).toISOString().slice(0, 10)
-    const rows = await this.daily.aggregate<{ _id: Types.ObjectId; sessions: number }>([
-      { $match: { ownerId: { $in: ids }, date: { $gte: from } } },
-      { $group: { _id: '$ownerId', sessions: { $sum: '$sessions' } } },
+    const to = new Date().toISOString().slice(0, 10)
+    const from = shiftDate(to, -(TRAFFIC_WINDOW_DAYS - 1))
+
+    const rows = await this.daily.aggregate<{
+      _id: Types.ObjectId
+      sessions: number
+      visitors: number
+    }>([
+      { $match: { ownerId: { $in: ids }, date: { $gte: from, $lte: to } } },
+      {
+        $group: {
+          _id: '$ownerId',
+          sessions: { $sum: '$sessions' },
+          visitors: { $sum: '$visitors' },
+        },
+      },
     ])
 
-    return new Map(rows.map((row) => [String(row._id), row.sessions]))
+    return new Map(
+      rows.map((row) => [String(row._id), { sessions: row.sessions, visitors: row.visitors }]),
+    )
   }
 }

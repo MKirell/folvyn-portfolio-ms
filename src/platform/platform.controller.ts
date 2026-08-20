@@ -123,7 +123,7 @@ export class PlatformController {
               (errorGroups.reduce((sum, group) => sum + group.count, 0) / traffic.totals.sessions) *
                 1000,
             ) / 10,
-      image: process.env.APP_IMAGE_TAG ?? null,
+      image: process.env.APP_IMAGE_TAG || null,
       prerender: {
         configured: this.prerender.enabled,
         attempts: this.prerender.recent(),
@@ -261,7 +261,7 @@ export class PlatformController {
           visitors: { $sum: '$visitors' },
         },
       },
-      { $sort: { sessions: -1 } },
+      { $sort: { visitors: -1, sessions: -1 } },
       { $limit: TOP_PORTFOLIOS },
       { $lookup: { from: 'owners', localField: '_id', foreignField: '_id', as: 'owner' } },
       { $unwind: '$owner' },

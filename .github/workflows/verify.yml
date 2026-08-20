@@ -12,4 +12,4 @@ permissions:
 
 jobs:
   quality:
-    uses: ./.github/workflows/quality.yml
+    uses: ./.github/workflows/checks.yml
