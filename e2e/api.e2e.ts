@@ -30,7 +30,7 @@ test.describe('public surface', () => {
   })
 
   test('resolves the whole portfolio for the default locale', async ({ request }) => {
-    const body = await (await request.get(`${API}/portfolio`)).json()
+    const body = await (await request.get(`${API}/portfolio/${SLUG}`)).json()
 
     expect(body.lang).toBe('en')
     expect(body.person.givenName).toBe('Mohamed Khalil')
@@ -45,14 +45,14 @@ test.describe('public surface', () => {
   })
 
   test('stores bare filenames, never URLs', async ({ request }) => {
-    const body = await (await request.get(`${API}/portfolio`)).json()
+    const body = await (await request.get(`${API}/portfolio/${SLUG}`)).json()
 
     expect(body.person.photo).toBe('off-image.jpeg')
     expect(body.education.certifications[0].doc).not.toContain('http')
   })
 
   test('lists only enabled languages', async ({ request }) => {
-    const body = await (await request.get(`${API}/portfolio/languages`)).json()
+    const body = await (await request.get(`${API}/portfolio/${SLUG}/languages`)).json()
 
     expect(body).toHaveLength(2)
   })
