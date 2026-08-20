@@ -22,7 +22,7 @@ import {
   ownerToken,
   platformToken,
   staticKeyProvider,
-} from './support/cognito-token'
+} from '../support/cognito-token'
 
 jest.mock('@aws-sdk/s3-request-presigner', () => ({
   getSignedUrl: jest.fn(() => Promise.resolve('https://bucket.example/signed')),

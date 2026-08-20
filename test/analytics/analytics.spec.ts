@@ -42,7 +42,7 @@ import {
   cognitoConfig,
   guestToken,
   staticKeyProvider,
-} from './support/cognito-token'
+} from '../support/cognito-token'
 
 const TODAY = SaltService.today()
 const OWNER = '507f1f77bcf86cd799439021'

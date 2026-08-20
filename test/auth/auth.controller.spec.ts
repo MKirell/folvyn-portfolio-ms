@@ -19,7 +19,7 @@ import {
   REGION,
   staticKeyProvider,
   USER_POOL_ID,
-} from './support/cognito-token'
+} from '../support/cognito-token'
 
 describe('AuthController', () => {
   let app: INestApplication

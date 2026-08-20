@@ -28,7 +28,7 @@ import {
   guestToken,
   machineToken,
   staticKeyProvider,
-} from './support/cognito-token'
+} from '../support/cognito-token'
 
 const validExperience = {
   company: 'Acme Corp',
