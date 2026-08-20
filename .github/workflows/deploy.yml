@@ -1,4 +1,4 @@
-name: reusable · deploy
+name: release
 
 on:
   workflow_call:
