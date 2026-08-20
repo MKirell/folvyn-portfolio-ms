@@ -1,4 +1,4 @@
-name: quality
+name: reusable · quality
 
 on:
   workflow_call:
