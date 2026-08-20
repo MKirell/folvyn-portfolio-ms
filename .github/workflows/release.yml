@@ -87,11 +87,12 @@ jobs:
             --publish >/dev/null
           aws lambda wait function-updated --function-name "$FUNCTION"
 
-          current=$(aws lambda get-function-configuration --function-name "$FUNCTION" \
-            --query 'Environment.Variables' --output json)
+          environment=$(aws lambda get-function-configuration --function-name "$FUNCTION" \
+            --query 'Environment.Variables' --output json |
+            jq -c --arg tag "$TAG" '{Variables: (. + {APP_IMAGE_TAG: $tag})}')
           aws lambda update-function-configuration \
             --function-name "$FUNCTION" \
-            --environment "Variables=$(echo "$current" | jq -c --arg tag "$TAG" '. + {APP_IMAGE_TAG: $tag}')" \
+            --environment "$environment" \
             >/dev/null
           aws lambda wait function-updated --function-name "$FUNCTION"
 
