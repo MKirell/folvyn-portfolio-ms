@@ -460,6 +460,7 @@ test.describe('analytics ingest', () => {
   test('accepts a same-origin beacon outside the api prefix', async ({ request }) => {
     const response = await request.post('/collect', {
       data: {
+        slug: SLUG,
         sessionId: 'e2e-session-1',
         events: [
           { type: 'session', lang: 'en', referrer: 'https://www.linkedin.com/feed' },
@@ -496,7 +497,7 @@ test.describe('analytics ingest', () => {
 
     for (const sessionId of ['e2e-session-2', 'e2e-session-3']) {
       await request.post('/collect', {
-        data: { sessionId, events: [{ type: 'session', lang: 'fr' }] },
+        data: { slug: SLUG, sessionId, events: [{ type: 'session', lang: 'fr' }] },
         headers: viewer,
       })
     }
@@ -516,7 +517,7 @@ test.describe('analytics ingest', () => {
     ).json()
 
     await request.post('/collect', {
-      data: { sessionId: 'e2e-session-4', events: [{ type: 'session', lang: 'en' }] },
+      data: { slug: SLUG, sessionId: 'e2e-session-4', events: [{ type: 'session', lang: 'en' }] },
       headers: { 'CloudFront-Viewer-Country': 'DE', 'Accept-Language': 'de-DE' },
     })
 
@@ -529,7 +530,7 @@ test.describe('analytics ingest', () => {
 
   test('rejects an unknown event type', async ({ request }) => {
     const response = await request.post('/collect', {
-      data: { sessionId: 'e2e-session-3', events: [{ type: 'exfiltrate' }] },
+      data: { slug: SLUG, sessionId: 'e2e-session-3', events: [{ type: 'exfiltrate' }] },
     })
 
     expect(response.status()).toBe(400)
@@ -538,6 +539,7 @@ test.describe('analytics ingest', () => {
   test('rejects a batch above the cap', async ({ request }) => {
     const response = await request.post('/collect', {
       data: {
+        slug: SLUG,
         sessionId: 'e2e-session-4',
         events: Array.from({ length: 21 }, () => ({ type: 'section', target: 'hero' })),
       },
