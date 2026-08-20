@@ -175,6 +175,11 @@ export class AnalyticsService {
       inc.shellSessions = (inc.shellSessions ?? 0) + 1
     }
 
+    const bounced = events.some((event) => event.type === 'dwell' && (event.value ?? 0) < BOUNCE_MS)
+    if (bounced && (await this.claim(ownerId, date, 'bounce', dto.sessionId))) {
+      inc.bounced = (inc.bounced ?? 0) + 1
+    }
+
     const entry = events.find((event) => event.type === 'section')?.target
     if (entry && (await this.claim(ownerId, date, 'entry', dto.sessionId))) {
       inc[`byEntry.${sanitizeKey(entry)}`] = (inc[`byEntry.${sanitizeKey(entry)}`] ?? 0) + 1
@@ -252,7 +257,6 @@ export class AnalyticsService {
       case 'dwell':
         bump('dwellMsTotal', event.value ?? 0)
         bump('dwellSamples')
-        if ((event.value ?? 0) < BOUNCE_MS) bump('bounced')
         break
       case 'doc':
         bump(`docs.${sanitizeKey(event.target)}`)
