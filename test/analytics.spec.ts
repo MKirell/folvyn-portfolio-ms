@@ -441,7 +441,7 @@ describe('summary', () => {
     const summary = await rollup.summary(7)
 
     expect(summary.totals).toMatchObject({ sessions: 120, visitors: 80, docs: 12 })
-    expect(summary.totals.dwellMsAverage).toBe(120000)
+    expect(summary.totals.dwellMsAverage).toBe(2000)
     expect(summary.deltas.sessions).toBe(20)
     expect(summary.deltas.visitors).toBe(100)
     expect(summary.vitals.lcp).toBe(2400)

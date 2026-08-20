@@ -191,11 +191,18 @@ export class RollupService {
     const dwellMsTotal = days.reduce((sum, day) => sum + (day.dwellMsTotal ?? 0), 0)
     const dwellSamples = days.reduce((sum, day) => sum + (day.dwellSamples ?? 0), 0)
 
+    const sessionTotal = days.reduce((sum, day) => sum + (day.sessions ?? 0), 0)
+
     return {
-      sessions: days.reduce((sum, day) => sum + (day.sessions ?? 0), 0),
+      sessions: sessionTotal,
       visitors: days.reduce((sum, day) => sum + (day.visitors ?? 0), 0),
       bounced: days.reduce((sum, day) => sum + (day.bounced ?? 0), 0),
-      dwellMsAverage: dwellSamples === 0 ? 0 : Math.round(dwellMsTotal / dwellSamples),
+      dwellMsAverage:
+        sessionTotal === 0
+          ? dwellSamples === 0
+            ? 0
+            : Math.round(dwellMsTotal / dwellSamples)
+          : Math.round(dwellMsTotal / sessionTotal),
       docs: days.reduce((sum, day) => sum + this.sum(day, 'docs'), 0),
     }
   }
