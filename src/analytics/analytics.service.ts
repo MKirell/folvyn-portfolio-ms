@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { ConfigService } from '@nestjs/config'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model, Types } from 'mongoose'
 import { OwnerService } from '@/owner/owner.service'
@@ -96,7 +95,6 @@ export class AnalyticsService {
     @InjectModel(AnalyticsVisitor.name) private readonly visitors: Model<AnalyticsVisitorDocument>,
     private readonly salt: SaltService,
     private readonly owners: OwnerService,
-    private readonly config: ConfigService,
   ) {}
 
   async ingest(dto: CollectDto, meta: RequestMeta): Promise<void> {
@@ -216,10 +214,9 @@ export class AnalyticsService {
   }
 
   private async resolveOwner(slug: string | undefined): Promise<Types.ObjectId | null> {
-    const wanted = slug ?? this.config.get<string>('app.defaultSlug')
-    if (!wanted) return null
+    if (!slug) return null
 
-    const owner = await this.owners.findPublishedBySlug(wanted).catch(() => null)
+    const owner = await this.owners.findPublishedBySlug(slug).catch(() => null)
     return owner ? new Types.ObjectId(owner.id) : null
   }
 

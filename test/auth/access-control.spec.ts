@@ -116,8 +116,8 @@ describe('read/write access control', () => {
   })
 
   describe('the portfolio viewer, unauthenticated', () => {
-    it('reads the portfolio', async () => {
-      await request(app.getHttpServer()).get('/portfolio').expect(200)
+    it('is not served a portfolio without naming one', async () => {
+      await request(app.getHttpServer()).get('/portfolio').expect(404)
     })
 
     it('reads a portfolio by its address', async () => {

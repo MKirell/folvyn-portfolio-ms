@@ -188,6 +188,7 @@ describe('ingest', () => {
   it('writes the raw events and the daily rollup in one pass', async () => {
     await service.ingest(
       {
+        slug: 'a-slug',
         sessionId: 's1',
         events: [
           { type: 'session', lang: 'en', referrer: 'https://linkedin.com/feed' },
@@ -215,7 +216,10 @@ describe('ingest', () => {
   it('counts a returning visitor once per day', async () => {
     visitors.create.mockRejectedValueOnce(Object.assign(new Error('dup'), { code: 11000 }))
 
-    await service.ingest({ sessionId: 's2', events: [{ type: 'session', lang: 'en' }] }, {})
+    await service.ingest(
+      { slug: 'a-slug', sessionId: 's2', events: [{ type: 'session', lang: 'en' }] },
+      {},
+    )
 
     expect(incOf().sessions).toBe(1)
     expect(incOf().visitors).toBeUndefined()
@@ -224,6 +228,7 @@ describe('ingest', () => {
   it('counts a terminal discovery once per session', async () => {
     await service.ingest(
       {
+        slug: 'a-slug',
         sessionId: 's3',
         events: [
           { type: 'shell', target: 'help' },
@@ -237,13 +242,19 @@ describe('ingest', () => {
   })
 
   it('treats a short session as a bounce', async () => {
-    await service.ingest({ sessionId: 's4', events: [{ type: 'dwell', value: 4000 }] }, {})
+    await service.ingest(
+      { slug: 'a-slug', sessionId: 's4', events: [{ type: 'dwell', value: 4000 }] },
+      {},
+    )
 
     expect(incOf()).toMatchObject({ dwellMsTotal: 4000, dwellSamples: 1, bounced: 1 })
   })
 
   it('does not count a long session as a bounce', async () => {
-    await service.ingest({ sessionId: 's5', events: [{ type: 'dwell', value: 45000 }] }, {})
+    await service.ingest(
+      { slug: 'a-slug', sessionId: 's5', events: [{ type: 'dwell', value: 45000 }] },
+      {},
+    )
 
     expect(incOf().bounced).toBeUndefined()
   })
@@ -251,6 +262,7 @@ describe('ingest', () => {
   it('caps each vitals reservoir at two hundred samples', async () => {
     await service.ingest(
       {
+        slug: 'a-slug',
         sessionId: 's6',
         events: [
           { type: 'vitals', target: 'lcp', value: 1800 },
@@ -266,7 +278,7 @@ describe('ingest', () => {
 
   it('ignores a vitals event with an unknown metric', async () => {
     await service.ingest(
-      { sessionId: 's7', events: [{ type: 'vitals', target: 'fps', value: 60 }] },
+      { slug: 'a-slug', sessionId: 's7', events: [{ type: 'vitals', target: 'fps', value: 60 }] },
       {},
     )
 
@@ -277,6 +289,7 @@ describe('ingest', () => {
   it('counts an impression and a click against the same card', async () => {
     await service.ingest(
       {
+        slug: 'a-slug',
         sessionId: 's9',
         events: [
           { type: 'impression', target: 'project-atlas' },
@@ -297,6 +310,7 @@ describe('ingest', () => {
   it('counts scroll depth under the quartile it reached', async () => {
     await service.ingest(
       {
+        slug: 'a-slug',
         sessionId: 's10',
         events: [
           { type: 'scroll', value: 25 },
@@ -311,7 +325,7 @@ describe('ingest', () => {
 
   it('records the browser from the user agent, never from the beacon', async () => {
     await service.ingest(
-      { sessionId: 's11', events: [{ type: 'session', lang: 'en' }] },
+      { slug: 'a-slug', sessionId: 's11', events: [{ type: 'session', lang: 'en' }] },
       { userAgent: 'Mozilla/5.0 Firefox/121' },
     )
 
@@ -321,6 +335,7 @@ describe('ingest', () => {
   it('credits the first section of a session as its entry point, once', async () => {
     await service.ingest(
       {
+        slug: 'a-slug',
         sessionId: 's12',
         events: [
           { type: 'section', target: 'projects' },
@@ -337,7 +352,10 @@ describe('ingest', () => {
   it('does not credit an entry point twice for one session', async () => {
     visitors.create.mockRejectedValueOnce(Object.assign(new Error('dup'), { code: 11000 }))
 
-    await service.ingest({ sessionId: 's13', events: [{ type: 'section', target: 'about' }] }, {})
+    await service.ingest(
+      { slug: 'a-slug', sessionId: 's13', events: [{ type: 'section', target: 'about' }] },
+      {},
+    )
 
     expect(incOf()['byEntry.about']).toBeUndefined()
     expect(incOf()['sections.about']).toBe(1)
@@ -346,6 +364,7 @@ describe('ingest', () => {
   it('drops an event whose target would create an unbounded counter key', async () => {
     await service.ingest(
       {
+        slug: 'a-slug',
         sessionId: 's14',
         events: [
           { type: 'impression', target: 'a card with spaces' },
@@ -360,7 +379,10 @@ describe('ingest', () => {
   })
 
   it('stores no event when the whole batch is rejected, but still counts the rejection', async () => {
-    await service.ingest({ sessionId: 's15', events: [{ type: 'scroll', value: 63 }] }, {})
+    await service.ingest(
+      { slug: 'a-slug', sessionId: 's15', events: [{ type: 'scroll', value: 63 }] },
+      {},
+    )
 
     expect(events.insertMany).not.toHaveBeenCalled()
     expect(daily.updateOne).toHaveBeenCalledTimes(1)
@@ -368,7 +390,7 @@ describe('ingest', () => {
   })
 
   it('purges rollups past retention once a day and no more', async () => {
-    await service.ingest({ sessionId: 's16', events: [{ type: 'session' }] }, {})
+    await service.ingest({ slug: 'a-slug', sessionId: 's16', events: [{ type: 'session' }] }, {})
 
     expect(daily.deleteMany).toHaveBeenCalledWith({
       ownerId: expect.anything(),
@@ -378,14 +400,18 @@ describe('ingest', () => {
     visitors.create.mockRejectedValue(Object.assign(new Error('dup'), { code: 11000 }))
     daily.deleteMany.mockClear()
 
-    await service.ingest({ sessionId: 's17', events: [{ type: 'session' }] }, {})
+    await service.ingest({ slug: 'a-slug', sessionId: 's17', events: [{ type: 'session' }] }, {})
 
     expect(daily.deleteMany).not.toHaveBeenCalled()
   })
 
   it('stores no IP and no raw referrer on the event', async () => {
     await service.ingest(
-      { sessionId: 's8', events: [{ type: 'session', referrer: 'https://linkedin.com/in/me' }] },
+      {
+        slug: 'a-slug',
+        sessionId: 's8',
+        events: [{ type: 'session', referrer: 'https://linkedin.com/in/me' }],
+      },
       { userAgent: 'Mozilla/5.0', acceptLanguage: 'en', country: 'FR' },
     )
 
@@ -671,7 +697,7 @@ describe('collect and summary endpoints', () => {
   it('accepts an anonymous beacon and answers 204', async () => {
     await request(app.getHttpServer())
       .post('/collect')
-      .send({ sessionId: 's1', events: [{ type: 'section', target: 'projects' }] })
+      .send({ slug: 'a-slug', sessionId: 's1', events: [{ type: 'section', target: 'projects' }] })
       .expect(204)
 
     expect(ingest).toHaveBeenCalledTimes(1)
@@ -681,7 +707,7 @@ describe('collect and summary endpoints', () => {
     await request(app.getHttpServer())
       .post('/collect')
       .set('CloudFront-Viewer-Country', 'GB')
-      .send({ sessionId: 's1', events: [{ type: 'session' }] })
+      .send({ slug: 'a-slug', sessionId: 's1', events: [{ type: 'session' }] })
       .expect(204)
 
     expect(ingest.mock.calls[0][1]).toMatchObject({ country: 'GB' })
@@ -690,7 +716,7 @@ describe('collect and summary endpoints', () => {
   it('rejects an unknown event type', async () => {
     await request(app.getHttpServer())
       .post('/collect')
-      .send({ sessionId: 's1', events: [{ type: 'exfiltrate' }] })
+      .send({ slug: 'a-slug', sessionId: 's1', events: [{ type: 'exfiltrate' }] })
       .expect(400)
   })
 
@@ -698,6 +724,7 @@ describe('collect and summary endpoints', () => {
     await request(app.getHttpServer())
       .post('/collect')
       .send({
+        slug: 'a-slug',
         sessionId: 's1',
         events: Array.from({ length: MAX_EVENTS_PER_BATCH + 1 }, () => ({ type: 'section' })),
       })
@@ -707,14 +734,14 @@ describe('collect and summary endpoints', () => {
   it('rejects an oversized target', async () => {
     await request(app.getHttpServer())
       .post('/collect')
-      .send({ sessionId: 's1', events: [{ type: 'doc', target: 'x'.repeat(200) }] })
+      .send({ slug: 'a-slug', sessionId: 's1', events: [{ type: 'doc', target: 'x'.repeat(200) }] })
       .expect(400)
   })
 
   it('rejects an unknown property on the beacon', async () => {
     await request(app.getHttpServer())
       .post('/collect')
-      .send({ sessionId: 's1', events: [{ type: 'section' }], ip: '1.2.3.4' })
+      .send({ slug: 'a-slug', sessionId: 's1', events: [{ type: 'section' }], ip: '1.2.3.4' })
       .expect(400)
   })
 

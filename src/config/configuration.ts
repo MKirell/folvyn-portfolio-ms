@@ -16,7 +16,6 @@ export interface AppConfig {
   port: number
   apiPrefix: string
   defaultLang: string
-  defaultSlug: string | null
   siteUrl: string
   corsOrigins: string[]
   logLevel: string
@@ -91,7 +90,6 @@ export function configuration(): Configuration {
       port: Number(process.env.PORT ?? 3000),
       apiPrefix: process.env.API_PREFIX ?? 'api/v1',
       defaultLang: process.env.DEFAULT_LANG ?? 'en',
-      defaultSlug: process.env.DEFAULT_PORTFOLIO_SLUG?.toLowerCase() || null,
       siteUrl: (process.env.SITE_URL ?? 'https://folvyn.mkirell.com').replace(/\/+$/, ''),
       corsOrigins: toList(process.env.CORS_ORIGINS),
       logLevel: process.env.LOG_LEVEL ?? 'log',

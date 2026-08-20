@@ -61,7 +61,6 @@ export const validationSchema = Joi.object({
   ASSETS_URL_TTL: Joi.number().min(60).max(3600).default(300),
 
   DEFAULT_LANG: Joi.string().default('en'),
-  DEFAULT_PORTFOLIO_SLUG: Joi.string().allow('').default(''),
   SITE_URL: Joi.string()
     .uri({ scheme: ['http', 'https'] })
     .default('https://folvyn.mkirell.com'),
