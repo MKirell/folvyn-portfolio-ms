@@ -4,6 +4,7 @@ import { Connection, ConnectionStates } from 'mongoose'
 import { Public } from '@/common/decorators/public.decorator'
 
 export const READY_TIMEOUT_MS = 5_000
+export const POLL_MS = 100
 
 @Public()
 @Controller('health')
@@ -12,7 +13,7 @@ export class HealthController {
 
   @Get()
   async check(): Promise<{ status: string }> {
-    if (this.connection.readyState === ConnectionStates.connecting) {
+    if (this.connection.readyState !== ConnectionStates.connected) {
       await this.settled()
     }
 
@@ -24,19 +25,11 @@ export class HealthController {
   }
 
   private async settled(): Promise<void> {
-    let timer: NodeJS.Timeout | undefined
+    const deadline = Date.now() + READY_TIMEOUT_MS
 
-    try {
-      await Promise.race([
-        this.connection.asPromise(),
-        new Promise((resolve) => {
-          timer = setTimeout(resolve, READY_TIMEOUT_MS)
-        }),
-      ])
-    } catch {
-      return
-    } finally {
-      if (timer) clearTimeout(timer)
+    while (Date.now() < deadline) {
+      if (this.connection.readyState === ConnectionStates.connected) return
+      await new Promise((resolve) => setTimeout(resolve, POLL_MS))
     }
   }
 }
