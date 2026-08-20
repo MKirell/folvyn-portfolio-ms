@@ -80,7 +80,7 @@ export async function seed(app: INestApplication): Promise<Types.ObjectId> {
     title: 'AI-900',
     issuer: 'Microsoft',
     doc: 'certificate-azure-ai900.pdf',
-    translations: { en: { date: 'June 2024' } },
+    date: '2024-06',
   })
 
   return ownerId

@@ -16,7 +16,7 @@ const certification = {
   title: 'DP-900',
   issuer: 'Microsoft',
   doc: 'certificate-azure-dp900.pdf',
-  translations: { en: { date: 'May 2024' }, fr: { date: 'Mai 2024' } },
+  date: '2024-05',
 }
 
 test.describe('public surface', () => {
@@ -410,7 +410,7 @@ test.describe('a locale nobody has finished translating', () => {
 
     const created = await request.post(`${API}/admin/locales`, {
       headers,
-      data: { code: 'de', label: 'DE', flagCode: 'de', enabled: false },
+      data: { code: 'de', flagCode: 'de', enabled: false },
     })
     expect(created.status()).toBe(201)
     const locale = await created.json()
@@ -432,7 +432,7 @@ test.describe('a locale nobody has finished translating', () => {
   test('cannot be created already enabled', async ({ request }) => {
     const response = await request.post(`${API}/admin/locales`, {
       headers: bearer(adminToken()),
-      data: { code: 'it', label: 'IT', flagCode: 'it', enabled: true },
+      data: { code: 'it', flagCode: 'it', enabled: true },
     })
 
     expect(response.status()).toBe(422)
