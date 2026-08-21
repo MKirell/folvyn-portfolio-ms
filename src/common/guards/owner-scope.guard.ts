@@ -7,6 +7,8 @@ import { OwnerService } from '@/owner/owner.service'
 import type { OwnerRecord } from '@/owner/owner.service'
 import type { AuthenticatedUser } from '@/common/types/authenticated-user'
 
+const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS'])
+
 export type OwnerScopedRequest = Request & { owner?: OwnerRecord }
 
 @Injectable()
@@ -27,7 +29,10 @@ export class OwnerScopeGuard implements CanActivate {
     const user = request.user as AuthenticatedUser | undefined
     if (!user || user.isMachine || user.roles.includes(Role.Platform)) return true
 
-    request.owner = await this.owners.ensureForUser(user)
+    request.owner = SAFE_METHODS.has(request.method)
+      ? ((await this.owners.findBySub(user.id)) ?? undefined)
+      : await this.owners.ensureForUser(user)
+
     return true
   }
 }

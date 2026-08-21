@@ -45,7 +45,11 @@ const OWNER = '507f1f77bcf86cd799439021'
 
 describe('read/write access control', () => {
   let app: INestApplication
-  let ownerService: { ensureForUser: jest.Mock; findPublishedBySlug: jest.Mock }
+  let ownerService: {
+    ensureForUser: jest.Mock
+    findBySub: jest.Mock
+    findPublishedBySlug: jest.Mock
+  }
   let portfolioService: { resolve: jest.Mock }
   let experienceService: {
     findAll: jest.Mock
@@ -59,6 +63,7 @@ describe('read/write access control', () => {
   beforeAll(async () => {
     ownerService = {
       ensureForUser: jest.fn().mockResolvedValue({ id: OWNER, slug: SLUG }),
+      findBySub: jest.fn().mockResolvedValue({ id: OWNER, slug: SLUG }),
       findPublishedBySlug: jest.fn().mockResolvedValue({ id: OWNER, slug: SLUG }),
     }
     portfolioService = { resolve: jest.fn().mockResolvedValue({ lang: 'en', experiences: [] }) }
@@ -244,6 +249,29 @@ describe('read/write access control', () => {
 
       const [user] = ownerService.ensureForUser.mock.calls.at(-1) as [{ id: string }]
       expect(user.id).toBe('a3f1c0de-0000-4000-8000-000000000002')
+    })
+  })
+
+  describe('creating the portfolio', () => {
+    it('is not provisioned merely by reading', async () => {
+      ownerService.ensureForUser.mockClear()
+
+      await request(app.getHttpServer())
+        .get('/admin/experiences')
+        .set('Authorization', `Bearer ${ownerToken()}`)
+
+      expect(ownerService.ensureForUser).not.toHaveBeenCalled()
+    })
+
+    it('is provisioned by the write that starts the portfolio', async () => {
+      ownerService.ensureForUser.mockClear()
+
+      await request(app.getHttpServer())
+        .post('/admin/experiences')
+        .set('Authorization', `Bearer ${ownerToken()}`)
+        .send(validExperience)
+
+      expect(ownerService.ensureForUser).toHaveBeenCalled()
     })
   })
 

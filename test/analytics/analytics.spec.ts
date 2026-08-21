@@ -664,7 +664,10 @@ describe('collect and summary endpoints', () => {
         { provide: APP_FILTER, useClass: AllExceptionsFilter },
         {
           provide: OwnerService,
-          useValue: { ensureForUser: jest.fn().mockResolvedValue({ id: OWNER, slug: 'a-slug' }) },
+          useValue: {
+            ensureForUser: jest.fn().mockResolvedValue({ id: OWNER, slug: 'a-slug' }),
+            findBySub: jest.fn().mockResolvedValue({ id: OWNER, slug: 'a-slug' }),
+          },
         },
         {
           provide: ConfigService,

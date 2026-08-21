@@ -80,7 +80,10 @@ describe('uploads endpoints', () => {
         { provide: APP_GUARD, useClass: OwnerScopeGuard },
         {
           provide: OwnerService,
-          useValue: { ensureForUser: jest.fn().mockResolvedValue({ id: OWNER, slug: 'someone' }) },
+          useValue: {
+            ensureForUser: jest.fn().mockResolvedValue({ id: OWNER, slug: 'someone' }),
+            findBySub: jest.fn().mockResolvedValue({ id: OWNER, slug: 'someone' }),
+          },
         },
         { provide: APP_FILTER, useClass: AllExceptionsFilter },
         {

@@ -5,12 +5,13 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  NotFoundException,
   Param,
   Patch,
   Post,
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { CurrentOwner, OwnerId } from '@/common/decorators/current-owner.decorator'
+import { OwnerId, OwnerIfAny } from '@/common/decorators/current-owner.decorator'
 import { OwnerService } from '@/owner/owner.service'
 import { OwnerLifecycleService } from '@/portfolio/me/owner-lifecycle.service'
 import { SlugParamDto, UpdateMeDto } from '@/owner/owner.dto'
@@ -29,7 +30,9 @@ export class MeController {
   ) {}
 
   @Get()
-  find(@CurrentOwner() owner: OwnerRecord): MeRecord {
+  find(@OwnerIfAny() owner: OwnerRecord | undefined): MeRecord {
+    if (!owner) throw new NotFoundException('No portfolio has been created yet')
+
     return {
       ...owner,
       assetPrefix: assetPrefixFor(this.config.get<string>('assets.bucket'), String(owner.id)),
