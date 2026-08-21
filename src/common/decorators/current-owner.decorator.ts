@@ -14,10 +14,10 @@ export const CurrentOwner = createParamDecorator((_data: unknown, ctx: Execution
   readOwner(ctx),
 )
 
-export const OwnerIfAny = createParamDecorator(
-  (_data: unknown, ctx: ExecutionContext) =>
-    ctx.switchToHttp().getRequest<OwnerScopedRequest>().owner,
-)
+export const OwnerIfAny = createParamDecorator((_data: unknown, ctx: ExecutionContext) => {
+  const request = ctx.switchToHttp().getRequest<OwnerScopedRequest>()
+  return request.ownerless ? undefined : request.owner
+})
 
 export const OwnerId = createParamDecorator(
   (_data: unknown, ctx: ExecutionContext) => readOwner(ctx).id,

@@ -36,6 +36,18 @@ export class OwnerService {
     private readonly identities: IdentityDirectory,
   ) {}
 
+  nobody(): OwnerRecord {
+    return {
+      id: new Types.ObjectId().toString(),
+      sub: '',
+      slug: '',
+      email: null,
+      displayName: null,
+      status: 'draft',
+      consentMode: 'measurement',
+    } as unknown as OwnerRecord
+  }
+
   async findBySub(sub: string): Promise<OwnerRecord | null> {
     const owner = await this.model.findOne({ sub }).lean<OwnerRecord>().exec()
     return owner ? toPlain(owner) : null

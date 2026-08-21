@@ -9,7 +9,7 @@ import type { AuthenticatedUser } from '@/common/types/authenticated-user'
 
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS'])
 
-export type OwnerScopedRequest = Request & { owner?: OwnerRecord }
+export type OwnerScopedRequest = Request & { owner?: OwnerRecord; ownerless?: boolean }
 
 @Injectable()
 export class OwnerScopeGuard implements CanActivate {
@@ -29,9 +29,14 @@ export class OwnerScopeGuard implements CanActivate {
     const user = request.user as AuthenticatedUser | undefined
     if (!user || user.isMachine || user.roles.includes(Role.Platform)) return true
 
-    request.owner = SAFE_METHODS.has(request.method)
-      ? ((await this.owners.findBySub(user.id)) ?? undefined)
-      : await this.owners.ensureForUser(user)
+    if (!SAFE_METHODS.has(request.method)) {
+      request.owner = await this.owners.ensureForUser(user)
+      return true
+    }
+
+    const existing = await this.owners.findBySub(user.id)
+    request.ownerless = existing === null
+    request.owner = existing ?? this.owners.nobody()
 
     return true
   }
