@@ -461,7 +461,7 @@ export class PlatformService {
       ownerId: new Types.ObjectId(ownerId),
       slug: owner.slug,
       reason,
-      requestedBy: actor.email ?? actor.id,
+      requestedBy: await this.actorEmail(actor),
       dueAt: new Date(Date.now() + ERASURE_DEADLINE_DAYS * 86_400_000),
     })
 
