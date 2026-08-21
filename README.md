@@ -311,10 +311,19 @@ Cognito-shaped tokens, so token verification is exercised for real against a sta
 
 ## Deployment
 
-Push to `main` → `.github/workflows/ci.yml`:
+Push to `develop` deploys dev; push to `main` deploys production. Both run the checks first, then the
+release:
 
-1. **quality** — typecheck, lint, format check, tests, build
-2. **image** — build the Docker image, push to ECR, point the Lambda at it, smoke-test `/health`
+1. **checks** — typecheck, lint, format check, unit suite with its coverage gate
+2. **e2e** — the API exercised end to end against a seeded database
+3. **secrets** — the tree scanned for anything that looks like a credential
+4. **deploy** — build the image, push to `folvyn-portfolio-ms`, roll the function onto it, smoke-test
+   `/health`
+
+Production never builds its own image: it promotes the digest dev already verified, and refuses if no
+image carries that commit.
+
+Every job writes a summary, so a run can be read from its Summary tab without opening a log.
 
 Two repository variables control it, both written by Terraform:
 
