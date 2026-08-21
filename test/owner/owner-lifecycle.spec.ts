@@ -60,8 +60,22 @@ describe('OwnerLifecycleService', () => {
     identities = { remove: jest.fn().mockResolvedValue(true) }
     analytics = { removeAllOwnedBy: jest.fn().mockResolvedValue(3) }
     uploads = { removeAllOwnedBy: jest.fn().mockResolvedValue(2) }
-    personService = { ...listStub(), findOptional: jest.fn().mockResolvedValue({ id: 'p' }) }
-    profileService = { ...listStub(), findOptional: jest.fn().mockResolvedValue({ id: 'f' }) }
+    personService = {
+      ...listStub(),
+      findOptional: jest.fn().mockResolvedValue({
+        id: 'p',
+        givenName: 'Ada',
+        familyName: 'Lovelace',
+        translations: { en: { headline: 'Mathematician' } },
+      }),
+    }
+    profileService = {
+      ...listStub(),
+      findOptional: jest.fn().mockResolvedValue({
+        id: 'f',
+        translations: { en: { tagline: 'The first programmer' } },
+      }),
+    }
     localeService = listStub()
     content = new Map(CONTENT_SERVICES.map((token) => [token, listStub()]))
     content.get(ProjectService)!.findAll.mockResolvedValue([{ id: 'one' }])
@@ -104,6 +118,27 @@ describe('OwnerLifecycleService', () => {
         }
         expect(response.details.missing).toEqual(['person', 'profile', 'locale'])
       }
+    })
+
+    it('refuses to publish until the person reads in the first language', async () => {
+      personService.findOptional.mockResolvedValue({
+        id: 'p',
+        givenName: 'Ada',
+        familyName: 'Lovelace',
+        translations: {},
+      })
+
+      await expect(service.publish(OWNER)).rejects.toMatchObject({
+        response: { details: { missing: ['person-translation'] } },
+      })
+    })
+
+    it('refuses to publish until the hero reads in the first language', async () => {
+      profileService.findOptional.mockResolvedValue({ id: 'f', translations: {} })
+
+      await expect(service.publish(OWNER)).rejects.toMatchObject({
+        response: { details: { missing: ['profile-translation'] } },
+      })
     })
 
     it('refuses a portfolio whose sections are all empty', async () => {

@@ -136,6 +136,17 @@ export class OwnerLifecycleService {
     this.logger.log(`Erased every store for ${owner.slug}`)
   }
 
+  private said(source: unknown, lang: string): Record<string, unknown> {
+    if (source instanceof Map) {
+      return (source.get(lang) as Record<string, unknown> | undefined) ?? {}
+    }
+    if (source && typeof source === 'object') {
+      const record = source as Record<string, unknown>
+      return (record[lang] as Record<string, unknown> | undefined) ?? {}
+    }
+    return {}
+  }
+
   private async completenessProblems(ownerId: string): Promise<string[]> {
     const [person, profile, locales, ...body] = await Promise.all([
       this.personService.findOptional(ownerId),
@@ -155,6 +166,18 @@ export class OwnerLifecycleService {
     if (!profile) missing.push('profile')
     if (locales.length === 0) missing.push('locale')
     if (body.every((entries) => entries.length === 0)) missing.push('section')
+
+    const first = locales[0]?.code
+    if (first) {
+      const introduces = this.said(person?.translations, first)
+      const greets = this.said(profile?.translations, first)
+
+      if (person && !(person.givenName && person.familyName && introduces.headline)) {
+        missing.push('person-translation')
+      }
+      if (profile && !greets.tagline) missing.push('profile-translation')
+    }
+
     return missing
   }
 }
