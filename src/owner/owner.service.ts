@@ -190,6 +190,11 @@ export class OwnerService {
     if (!deleted) throw new NotFoundException('Owner not found')
   }
 
+  async proposedSlugFor(user: AuthenticatedUser): Promise<string> {
+    const identity = await this.identities.describe(user.username)
+    return this.reserveSlug(user, identity)
+  }
+
   private async reserveSlug(user: AuthenticatedUser, identity: FederatedIdentity): Promise<string> {
     const fromName =
       identity.givenName && identity.familyName

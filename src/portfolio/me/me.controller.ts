@@ -12,6 +12,8 @@ import {
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { OwnerId, OwnerIfAny } from '@/common/decorators/current-owner.decorator'
+import { CurrentUser } from '@/common/decorators/current-user.decorator'
+import type { AuthenticatedUser } from '@/common/types/authenticated-user'
 import { OwnerService } from '@/owner/owner.service'
 import { OwnerLifecycleService } from '@/portfolio/me/owner-lifecycle.service'
 import { SlugParamDto, UpdateMeDto } from '@/owner/owner.dto'
@@ -37,6 +39,11 @@ export class MeController {
       ...owner,
       assetPrefix: assetPrefixFor(this.config.get<string>('assets.bucket'), String(owner.id)),
     }
+  }
+
+  @Get('proposed-address')
+  async proposedAddress(@CurrentUser() user: AuthenticatedUser): Promise<{ slug: string }> {
+    return { slug: await this.owners.proposedSlugFor(user) }
   }
 
   @Patch()
