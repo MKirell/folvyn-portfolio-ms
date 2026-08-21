@@ -35,6 +35,14 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### quality — ${{ job.status }}"
+            echo
+            echo "Finished."
+          } >> "$GITHUB_STEP_SUMMARY"
   e2e:
     needs: quality
     if: vars.CI_ENABLED != 'false'
@@ -59,6 +67,14 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### e2e — ${{ job.status }}"
+            echo
+            echo "End-to-end run in a real browser. A report is attached when it fails."
+          } >> "$GITHUB_STEP_SUMMARY"
   secrets:
     if: vars.CI_ENABLED != 'false'
     runs-on: ubuntu-latest
@@ -70,3 +86,11 @@ jobs:
       - name: Scan the history for secrets
         run: |
           docker run --rm -v "$PWD:/repo"             zricethezav/gitleaks:latest detect             --source=/repo --redact --no-banner --exit-code=1
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### secrets — ${{ job.status }}"
+            echo
+            echo "The tree scanned for anything that looks like a credential."
+          } >> "$GITHUB_STEP_SUMMARY"

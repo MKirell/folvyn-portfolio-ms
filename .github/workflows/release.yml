@@ -105,3 +105,20 @@ jobs:
           done
           echo "health check never returned 200" >&2
           exit 1
+
+      - name: Summary
+        if: always()
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+        run: |
+          {
+            echo "## $ENVIRONMENT — ${{ job.status }}"
+            echo
+            echo "| | |"
+            echo "| --- | --- |"
+            echo "| commit | \`${{ github.sha }}\` |"
+            echo "| branch | \`${{ github.ref_name }}\` |"
+            echo "| function | \`${{ vars.LAMBDA_FUNCTION_NAME }}\` |"
+            echo "| image | \`${{ vars.ECR_REPOSITORY }}:${{ github.sha }}\` |"
+            echo "| health | ${{ vars.API_BASE_URL }}/health |"
+          } >> "$GITHUB_STEP_SUMMARY"
