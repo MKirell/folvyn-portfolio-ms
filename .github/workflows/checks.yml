@@ -21,12 +21,15 @@ jobs:
       - run: npm ci
 
       - name: Typecheck
+        id: typecheck
         run: npm run typecheck
 
       - name: Lint
+        id: lint
         run: npm run lint
 
       - name: Format
+        id: format
         run: npm run format:check
 
       - name: Test
@@ -39,9 +42,19 @@ jobs:
         if: always()
         run: |
           {
-            echo "### quality — ${{ job.status }}"
+            echo "## Quality — ${{ job.status }}"
             echo
-            echo "Finished."
+            echo "| step | outcome |"
+            echo "| --- | --- |"
+            echo "| Typecheck | ${{ steps.typecheck.outcome || 'skipped' }} |"
+            echo "| Lint | ${{ steps.lint.outcome || 'skipped' }} |"
+            echo "| Format | ${{ steps.format.outcome || 'skipped' }} |"
+            echo "| Test with the coverage gate | ${{ steps.tests.outcome || 'skipped' }} |"
+            echo
+            echo "| | |"
+            echo "| --- | --- |"
+            echo "| commit | \`${{ github.sha }}\` |"
+            echo "| branch | \`${{ github.ref_name }}\` |"
           } >> "$GITHUB_STEP_SUMMARY"
   e2e:
     needs: quality
